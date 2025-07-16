@@ -1,6 +1,7 @@
 package form
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/url"
 
@@ -112,9 +113,9 @@ func (f *Form) WithAction(v string) *Form {
 	return f
 }
 
-func (f *Form) WithOptions(options ...Option) *Form {
+func (f *Form) WithOptions(options ...*Option) *Form {
 	for _, option := range options {
-		f.Options = append(f.Options, &option)
+		f.Options = append(f.Options, option)
 	}
 
 	return f
@@ -131,7 +132,7 @@ func (f *Form) IsValid() bool {
 	return isValid
 }
 
-func (f *Form) Bind(data any) error {
+func (f *Form) Mount(data any) error {
 	props, err := util.InspectStruct(data)
 
 	if err != nil {
@@ -140,7 +141,7 @@ func (f *Form) Bind(data any) error {
 
 	for key, value := range props {
 		if f.HasField(key) {
-			err = f.GetField(key).Bind(value)
+			err = f.GetField(key).Mount(value)
 
 			if err != nil {
 				return err
@@ -149,6 +150,18 @@ func (f *Form) Bind(data any) error {
 	}
 
 	return nil
+}
+
+func (f *Form) Bind(data any) error {
+	toBind := make(map[string]any)
+
+	for _, field := range f.Fields {
+		field.Bind(toBind, nil)
+	}
+
+	j, _ := json.Marshal(toBind)
+
+	return json.Unmarshal(j, data)
 }
 
 func (f *Form) HandleRequest(req *http.Request) {
@@ -166,7 +179,7 @@ func (f *Form) HandleRequest(req *http.Request) {
 	for _, c := range f.GlobalFields {
 		if data.Has(c.GetName()) {
 			isSubmitted = true
-			c.Bind(data.Get(c.GetName()))
+			c.Mount(data.Get(c.GetName()))
 		}
 	}
 

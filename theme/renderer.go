@@ -95,6 +95,30 @@ func (r *Renderer) RenderFormAttr(form *form.Form) template.HTMLAttr {
 	})
 }
 
+func (r *Renderer) RenderFormHelp(form *form.Form) template.HTML {
+	var help string
+
+	if form.HasOption("help") {
+		help = form.GetOption("help").Value.(string)
+	}
+
+	return r.Render("help", r.Theme["help"], map[string]any{
+		"Help": help,
+	})
+}
+
+func (r *Renderer) RenderWidgetHelp(field *form.Field) template.HTML {
+	var help string
+
+	if field.HasOption("help") {
+		help = field.GetOption("help").Value.(string)
+	}
+
+	return r.Render("help", r.Theme["help"], map[string]any{
+		"Help": help,
+	})
+}
+
 func (r *Renderer) RenderAttr(name, tpl string, args any) template.HTMLAttr {
 	t, err := template.New(name).Parse(tpl)
 
@@ -114,14 +138,16 @@ func (r *Renderer) RenderAttr(name, tpl string, args any) template.HTMLAttr {
 
 func (r *Renderer) Render(name, tpl string, args any) template.HTML {
 	t, err := template.New(name).Funcs(template.FuncMap{
-		"form":        r.RenderForm,
-		"form_row":    r.RenderRow,
-		"form_label":  r.RenderLabel,
-		"form_widget": r.RenderWidget,
-		"form_error":  r.RenderError,
-		"form_attr":   r.RenderFormAttr,
-		"widget_attr": r.RenderWidgetAttr,
-		"label_attr":  r.RenderLabelAttr,
+		"form":             r.RenderForm,
+		"form_row":         r.RenderRow,
+		"form_label":       r.RenderLabel,
+		"form_widget":      r.RenderWidget,
+		"form_error":       r.RenderError,
+		"form_attr":        r.RenderFormAttr,
+		"form_widget_attr": r.RenderWidgetAttr,
+		"form_label_attr":  r.RenderLabelAttr,
+		"form_help":        r.RenderFormHelp,
+		"form_widget_help": r.RenderWidgetHelp,
 	}).Parse(tpl)
 
 	if err != nil {

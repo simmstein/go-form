@@ -44,6 +44,7 @@ type Field struct {
 	Constraints []validation.Constraint
 	Errors      []validation.Error
 	PrepareView func() map[string]any
+	BeforeMount func(data any) (any, error)
 	BeforeBind  func(data any) (any, error)
 	Validate    func(f *Field) bool
 	Form        *Form
@@ -61,6 +62,10 @@ func NewField(name, widget string) *Field {
 		m := make(map[string]any)
 
 		return m
+	}
+
+	f.BeforeMount = func(data any) (any, error) {
+		return data, nil
 	}
 
 	f.BeforeBind = func(data any) (any, error) {
@@ -92,12 +97,12 @@ func (f *Field) GetOption(name string) *Option {
 	return nil
 }
 
-func (f *Field) WithOptions(options ...Option) *Field {
+func (f *Field) WithOptions(options ...*Option) *Field {
 	for _, option := range options {
 		if f.HasOption(option.Name) {
 			f.GetOption(option.Name).Value = option.Value
 		} else {
-			f.Options = append(f.Options, &option)
+			f.Options = append(f.Options, option)
 		}
 	}
 
@@ -168,14 +173,14 @@ func (f *Field) GetId() string {
 	return name
 }
 
-func (f *Field) Bind(data any) error {
+func (f *Field) Mount(data any) error {
 	if len(f.Children) == 0 {
 		f.Data = data
 
 		return nil
 	}
 
-	data, err := f.BeforeBind(data)
+	data, err := f.BeforeMount(data)
 
 	if err != nil {
 		return err
@@ -189,12 +194,38 @@ func (f *Field) Bind(data any) error {
 
 	for key, value := range props {
 		if f.HasChild(key) {
-			err = f.GetChild(key).Bind(value)
+			err = f.GetChild(key).Mount(value)
 
 			if err != nil {
 				return err
 			}
 		}
+	}
+
+	return nil
+}
+
+func (f *Field) Bind(data map[string]any, key *string) error {
+	if len(f.Children) == 0 {
+		v, err := f.BeforeBind(f.Data)
+
+		if err != nil {
+			return err
+		}
+
+		if key != nil {
+			data[*key] = v
+		} else {
+			data[f.Name] = v
+		}
+
+		return nil
+	}
+
+	data[f.Name] = make(map[string]any)
+
+	for _, child := range f.Children {
+		child.Bind(data[f.Name].(map[string]any), key)
 	}
 
 	return nil

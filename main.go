@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -31,15 +30,13 @@ func main() {
 		}
 
 		f := example.CreateAddressForm()
-		f.Bind(data)
+		f.Mount(data)
 
 		if r.Method == f.Method {
 			f.HandleRequest(r)
 
 			if f.IsSubmitted() && f.IsValid() {
-				fmt.Printf("%+v\n", "OK")
-			} else {
-				fmt.Printf("%+v\n", "KO")
+				f.Bind(&data)
 			}
 		}
 
