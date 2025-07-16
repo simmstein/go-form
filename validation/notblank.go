@@ -1,7 +1,6 @@
 package validation
 
 import (
-	"fmt"
 	"reflect"
 )
 
@@ -11,9 +10,6 @@ type NotBlank struct {
 func (c NotBlank) Validate(data any) []Error {
 	isValid := true
 	errors := []Error{}
-
-	fmt.Printf("%+v\n", data)
-
 	t := reflect.TypeOf(data)
 
 	if t.Kind() == reflect.Ptr {
@@ -35,7 +31,7 @@ func (c NotBlank) Validate(data any) []Error {
 			isValid = false
 		}
 	} else {
-		fmt.Printf("d=%+v\n", data)
+		errors = append(errors, Error("This value can not be processed"))
 	}
 
 	if !isValid {

@@ -1,6 +1,9 @@
 package form
 
 import (
+	"fmt"
+	"strings"
+
 	"gitnet.fr/deblan/go-form/util"
 	"gitnet.fr/deblan/go-form/validation"
 )
@@ -43,6 +46,8 @@ type Field struct {
 	PrepareView func() map[string]any
 	BeforeBind  func(data any) (any, error)
 	Validate    func(f *Field) bool
+	Form        *Form
+	Parent      *Field
 }
 
 func NewField(name, widget string) *Field {
@@ -109,6 +114,7 @@ func (f *Field) WithConstraints(constraints ...validation.Constraint) *Field {
 
 func (f *Field) Add(children ...*Field) *Field {
 	for _, child := range children {
+		child.Parent = f
 		f.Children = append(f.Children, child)
 	}
 
@@ -137,6 +143,29 @@ func (f *Field) GetChild(name string) *Field {
 	}
 
 	return result
+}
+
+func (f *Field) GetName() string {
+	var name string
+
+	if f.Form != nil && f.Form.Name != "" {
+		name = fmt.Sprintf("%s[%s]", f.Form.Name, f.Name)
+	} else if f.Parent != nil {
+		name = fmt.Sprintf("%s[%s]", f.Parent.GetName(), f.Name)
+	} else {
+		name = f.Name
+	}
+
+	return name
+}
+
+func (f *Field) GetId() string {
+	name := f.GetName()
+	name = strings.ReplaceAll(name, "[", "-")
+	name = strings.ReplaceAll(name, "]", "")
+	name = strings.ToLower(name)
+
+	return name
 }
 
 func (f *Field) Bind(data any) error {

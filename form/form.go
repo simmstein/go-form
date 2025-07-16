@@ -2,31 +2,72 @@ package form
 
 import (
 	"net/http"
+	"net/url"
 
 	"gitnet.fr/deblan/go-form/util"
 	"gitnet.fr/deblan/go-form/validation"
 )
 
 type Form struct {
-	Fields  []*Field
-	Errors  []validation.Error
-	Method  string
-	Action  string
-	Name    string
-	Options []Option
+	Fields       []*Field
+	GlobalFields []*Field
+	Errors       []validation.Error
+	Method       string
+	Action       string
+	Name         string
+	Options      []*Option
+	RequestData  *url.Values
 }
 
 func NewForm(fields ...*Field) *Form {
 	f := new(Form)
 	f.Method = "POST"
+	f.Name = "form"
 	f.Add(fields...)
 
 	return f
 }
 
+func (f *Form) HasOption(name string) bool {
+	for _, option := range f.Options {
+		if option.Name == name {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (f *Form) GetOption(name string) *Option {
+	for _, option := range f.Options {
+		if option.Name == name {
+			return option
+		}
+	}
+
+	return nil
+}
+
 func (f *Form) Add(fields ...*Field) {
 	for _, field := range fields {
+		field.Form = f
 		f.Fields = append(f.Fields, field)
+	}
+}
+
+func (f *Form) End() *Form {
+	for _, c := range f.Fields {
+		f.AddGlobalField(c)
+	}
+
+	return f
+}
+
+func (f *Form) AddGlobalField(field *Field) {
+	f.GlobalFields = append(f.GlobalFields, field)
+
+	for _, c := range field.Children {
+		f.AddGlobalField(c)
 	}
 }
 
@@ -73,7 +114,7 @@ func (f *Form) WithAction(v string) *Form {
 
 func (f *Form) WithOptions(options ...Option) *Form {
 	for _, option := range options {
-		f.Options = append(f.Options, option)
+		f.Options = append(f.Options, &option)
 	}
 
 	return f
@@ -110,8 +151,30 @@ func (f *Form) Bind(data any) error {
 	return nil
 }
 
-func (f *Form) HandleRequest(req http.Request) {
-	if f.Method == "POST" {
-		// data := req.PostForm
+func (f *Form) HandleRequest(req *http.Request) {
+	var data url.Values
+
+	if f.Method != "GET" {
+		req.ParseForm()
+		data = req.Form
+	} else {
+		data = req.URL.Query()
 	}
+
+	isSubmitted := false
+
+	for _, c := range f.GlobalFields {
+		if data.Has(c.GetName()) {
+			isSubmitted = true
+			c.Bind(data.Get(c.GetName()))
+		}
+	}
+
+	if isSubmitted {
+		f.RequestData = &data
+	}
+}
+
+func (f *Form) IsSubmitted() bool {
+	return f.RequestData != nil
 }
