@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"html/template"
 
+	"github.com/spf13/cast"
 	"gitnet.fr/deblan/go-form/form"
 	"gitnet.fr/deblan/go-form/validation"
 )
@@ -136,8 +137,8 @@ func (r *Renderer) RenderAttr(name, tpl string, args any) template.HTMLAttr {
 	return template.HTMLAttr(buf.String())
 }
 
-func (r *Renderer) Render(name, tpl string, args any) template.HTML {
-	t, err := template.New(name).Funcs(template.FuncMap{
+func (r *Renderer) FuncMap() template.FuncMap {
+	return template.FuncMap{
 		"form":             r.RenderForm,
 		"form_row":         r.RenderRow,
 		"form_label":       r.RenderLabel,
@@ -148,7 +149,19 @@ func (r *Renderer) Render(name, tpl string, args any) template.HTML {
 		"form_label_attr":  r.RenderLabelAttr,
 		"form_help":        r.RenderFormHelp,
 		"form_widget_help": r.RenderWidgetHelp,
-	}).Parse(tpl)
+		"sum": func(values ...any) float64 {
+			res := float64(0)
+			for _, value := range values {
+				res += cast.ToFloat64(value)
+			}
+
+			return res
+		},
+	}
+}
+
+func (r *Renderer) Render(name, tpl string, args any) template.HTML {
+	t, err := template.New(name).Funcs(r.FuncMap()).Parse(tpl)
 
 	if err != nil {
 		return template.HTML(err.Error())

@@ -1,10 +1,10 @@
 package form
 
 import (
-	"encoding/json"
 	"net/http"
 	"net/url"
 
+	"github.com/mitchellh/mapstructure"
 	"gitnet.fr/deblan/go-form/util"
 	"gitnet.fr/deblan/go-form/validation"
 )
@@ -47,6 +47,12 @@ func (f *Form) GetOption(name string) *Option {
 	}
 
 	return nil
+}
+
+func (f *Form) ResetErrors() *Form {
+	f.Errors = []validation.Error{}
+
+	return f
 }
 
 func (f *Form) Add(fields ...*Field) {
@@ -123,6 +129,7 @@ func (f *Form) WithOptions(options ...*Option) *Form {
 
 func (f *Form) IsValid() bool {
 	isValid := true
+	f.ResetErrors()
 
 	for _, field := range f.Fields {
 		fieldIsValid := field.Validate(field)
@@ -159,9 +166,7 @@ func (f *Form) Bind(data any) error {
 		field.Bind(toBind, nil)
 	}
 
-	j, _ := json.Marshal(toBind)
-
-	return json.Unmarshal(j, data)
+	return mapstructure.Decode(toBind, data)
 }
 
 func (f *Form) HandleRequest(req *http.Request) {
@@ -179,7 +184,12 @@ func (f *Form) HandleRequest(req *http.Request) {
 	for _, c := range f.GlobalFields {
 		if data.Has(c.GetName()) {
 			isSubmitted = true
-			c.Mount(data.Get(c.GetName()))
+
+			if c.IsSlice {
+				c.Mount(data[c.GetName()])
+			} else {
+				c.Mount(data.Get(c.GetName()))
+			}
 		}
 	}
 

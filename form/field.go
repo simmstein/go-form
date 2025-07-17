@@ -13,6 +13,7 @@ func FieldValidation(f *Field) bool {
 		isValid := true
 
 		for _, c := range f.Children {
+			c.ResetErrors()
 			isChildValid, errs := validation.Validate(c.Data, c.Constraints)
 
 			if len(errs) > 0 {
@@ -24,8 +25,8 @@ func FieldValidation(f *Field) bool {
 
 		return isValid
 	} else {
+		f.ResetErrors()
 		isValid, errs := validation.Validate(f.Data, f.Constraints)
-		f.Errors = []validation.Error{}
 
 		if len(errs) > 0 {
 			f.Errors = errs
@@ -47,6 +48,7 @@ type Field struct {
 	BeforeMount func(data any) (any, error)
 	BeforeBind  func(data any) (any, error)
 	Validate    func(f *Field) bool
+	IsSlice     bool
 	Form        *Form
 	Parent      *Field
 }
@@ -109,10 +111,34 @@ func (f *Field) WithOptions(options ...*Option) *Field {
 	return f
 }
 
+func (f *Field) ResetErrors() *Field {
+	f.Errors = []validation.Error{}
+
+	return f
+}
+
+func (f *Field) WithSlice() *Field {
+	f.IsSlice = true
+
+	return f
+}
+
 func (f *Field) WithConstraints(constraints ...validation.Constraint) *Field {
 	for _, constraint := range constraints {
 		f.Constraints = append(f.Constraints, constraint)
 	}
+
+	return f
+}
+
+func (f *Field) WithBeforeMount(callback func(data any) (any, error)) *Field {
+	f.BeforeMount = callback
+
+	return f
+}
+
+func (f *Field) WithBeforeBind(callback func(data any) (any, error)) *Field {
+	f.BeforeBind = callback
 
 	return f
 }
@@ -174,16 +200,16 @@ func (f *Field) GetId() string {
 }
 
 func (f *Field) Mount(data any) error {
-	if len(f.Children) == 0 {
-		f.Data = data
-
-		return nil
-	}
-
 	data, err := f.BeforeMount(data)
 
 	if err != nil {
 		return err
+	}
+
+	if len(f.Children) == 0 {
+		f.Data = data
+
+		return nil
 	}
 
 	props, err := util.InspectStruct(data)
