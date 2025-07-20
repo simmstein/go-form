@@ -49,6 +49,7 @@ func main() {
 				WithConstraints(
 					validation.NewNotBlank(),
 				),
+		    form.NewSubmit("submit"),
 		).
 			End().
 			WithMethod(http.MethodPost).
