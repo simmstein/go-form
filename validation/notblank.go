@@ -7,15 +7,25 @@ import (
 )
 
 type NotBlank struct {
+	Message          string
+	TypeErrorMessage string
+}
+
+func NewNotBlank() NotBlank {
+	return NotBlank{
+		Message:          "This value should not be blank.",
+		TypeErrorMessage: "This value can not be processed.",
+	}
 }
 
 func (c NotBlank) Validate(data any) []Error {
 	isValid := true
-	label := "This value should not be blank."
 	errors := []Error{}
 
-	if data == nil {
-		errors = append(errors, Error(label))
+	v := reflect.ValueOf(data)
+
+	if v.IsZero() {
+		errors = append(errors, Error(c.Message))
 
 		return errors
 	}
@@ -48,11 +58,11 @@ func (c NotBlank) Validate(data any) []Error {
 	case reflect.Uint8:
 		isValid = cast.ToFloat64(data.(string)) == float64(0)
 	default:
-		errors = append(errors, Error("This value can not be processed."))
+		errors = append(errors, Error(c.TypeErrorMessage))
 	}
 
 	if !isValid {
-		errors = append(errors, Error(label))
+		errors = append(errors, Error(c.Message))
 	}
 
 	return errors
