@@ -14,13 +14,13 @@ Creating and processing HTML forms is hard and repetitive. You need to deal with
 
 ## Installation
 
-```
+```shell
 go get gitnet.fr/deblan/go-form
 ```
 
 ## Quick Start
 
-```
+```go
 package main
 
 import (
