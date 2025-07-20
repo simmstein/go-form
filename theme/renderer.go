@@ -96,6 +96,18 @@ func (r *Renderer) RenderFormAttr(form *form.Form) template.HTMLAttr {
 	})
 }
 
+func (r *Renderer) RenderRowAttr(field *form.Field) template.HTMLAttr {
+	var attributes map[string]string
+
+	if field.HasOption("row_attr") {
+		attributes = field.GetOption("row_attr").Value.(map[string]string)
+	}
+
+	return r.RenderAttr("raw_attr", r.Theme["attributes"], map[string]any{
+		"Attributes": attributes,
+	})
+}
+
 func (r *Renderer) RenderFormHelp(form *form.Form) template.HTML {
 	var help string
 
@@ -147,6 +159,7 @@ func (r *Renderer) FuncMap() template.FuncMap {
 		"form_attr":        r.RenderFormAttr,
 		"form_widget_attr": r.RenderWidgetAttr,
 		"form_label_attr":  r.RenderLabelAttr,
+		"form_row_attr":    r.RenderRowAttr,
 		"form_help":        r.RenderFormHelp,
 		"form_widget_help": r.RenderWidgetHelp,
 		"sum": func(values ...any) float64 {
