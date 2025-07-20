@@ -100,7 +100,7 @@ func NewFieldChoice(name string) *Field {
 			NewOption("choices", &Choices{}),
 			NewOption("expanded", false),
 			NewOption("multiple", false),
-			NewOption("empty_choice_label", ""),
+			NewOption("empty_choice_label", "None"),
 		)
 
 	f.WithBeforeBind(func(data any) (any, error) {
