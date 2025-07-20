@@ -80,6 +80,7 @@ func (c *Choices) GetChoices() []Choice {
 	return choices
 }
 
+// Generates an instance of Choices
 func NewChoices(items any) *Choices {
 	builder := func(key int, item any) string {
 		return cast.ToString(key)
@@ -94,6 +95,7 @@ func NewChoices(items any) *Choices {
 	return &choices
 }
 
+// Generates inputs (checkbox or radio) or selects
 func NewFieldChoice(name string) *Field {
 	f := NewField(name, "choice").
 		WithOptions(

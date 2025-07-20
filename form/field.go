@@ -8,6 +8,7 @@ import (
 	"gitnet.fr/deblan/go-form/validation"
 )
 
+// Generic function for field.Validation
 func FieldValidation(f *Field) bool {
 	if len(f.Children) > 0 {
 		isValid := true
@@ -36,6 +37,7 @@ func FieldValidation(f *Field) bool {
 	}
 }
 
+// Field represents a field in a form
 type Field struct {
 	Name        string
 	Widget      string
@@ -54,6 +56,8 @@ type Field struct {
 	Parent      *Field
 }
 
+// Generates a new field with default properties
+// It should not be used directly but inside function like in form.NewFieldText
 func NewField(name, widget string) *Field {
 	f := &Field{
 		Name:        name,
@@ -81,6 +85,7 @@ func NewField(name, widget string) *Field {
 	return f
 }
 
+// Checks if the field contains an option using its name
 func (f *Field) HasOption(name string) bool {
 	for _, option := range f.Options {
 		if option.Name == name {
@@ -91,6 +96,7 @@ func (f *Field) HasOption(name string) bool {
 	return false
 }
 
+// Returns an option using its name
 func (f *Field) GetOption(name string) *Option {
 	for _, option := range f.Options {
 		if option.Name == name {
@@ -101,6 +107,7 @@ func (f *Field) GetOption(name string) *Option {
 	return nil
 }
 
+// Appends options to the field
 func (f *Field) WithOptions(options ...*Option) *Field {
 	for _, option := range options {
 		if f.HasOption(option.Name) {
@@ -113,30 +120,35 @@ func (f *Field) WithOptions(options ...*Option) *Field {
 	return f
 }
 
+// Sets data the field
 func (f *Field) WithData(data any) *Field {
 	f.Data = data
 
 	return f
 }
 
+// Resets the field errors
 func (f *Field) ResetErrors() *Field {
 	f.Errors = []validation.Error{}
 
 	return f
 }
 
+// Sets that the field represents a data slice
 func (f *Field) WithSlice() *Field {
 	f.IsSlice = true
 
 	return f
 }
 
+// Sets that the name of the field is not computed
 func (f *Field) WithFixedName() *Field {
 	f.IsFixedName = true
 
 	return f
 }
 
+// Appends constraints
 func (f *Field) WithConstraints(constraints ...validation.Constraint) *Field {
 	for _, constraint := range constraints {
 		f.Constraints = append(f.Constraints, constraint)
@@ -145,18 +157,21 @@ func (f *Field) WithConstraints(constraints ...validation.Constraint) *Field {
 	return f
 }
 
+// Sets a transformer applied to the structure data before displaying it in a field
 func (f *Field) WithBeforeMount(callback func(data any) (any, error)) *Field {
 	f.BeforeMount = callback
 
 	return f
 }
 
+// Sets a transformer applied to the data of a field before defining it in a structure
 func (f *Field) WithBeforeBind(callback func(data any) (any, error)) *Field {
 	f.BeforeBind = callback
 
 	return f
 }
 
+// Appends children
 func (f *Field) Add(children ...*Field) *Field {
 	for _, child := range children {
 		child.Parent = f
@@ -166,6 +181,7 @@ func (f *Field) Add(children ...*Field) *Field {
 	return f
 }
 
+// Checks if the field contains a child using its name
 func (f *Field) HasChild(name string) bool {
 	for _, child := range f.Children {
 		if name == child.Name {
@@ -176,6 +192,7 @@ func (f *Field) HasChild(name string) bool {
 	return false
 }
 
+// Returns a child using its name
 func (f *Field) GetChild(name string) *Field {
 	var result *Field
 
@@ -190,6 +207,7 @@ func (f *Field) GetChild(name string) *Field {
 	return result
 }
 
+// Computes the name of the field
 func (f *Field) GetName() string {
 	var name string
 
@@ -208,6 +226,7 @@ func (f *Field) GetName() string {
 	return name
 }
 
+// Computes the id of the field
 func (f *Field) GetId() string {
 	name := f.GetName()
 	name = strings.ReplaceAll(name, "[", "-")
@@ -217,6 +236,7 @@ func (f *Field) GetId() string {
 	return name
 }
 
+// Populates the field with data
 func (f *Field) Mount(data any) error {
 	data, err := f.BeforeMount(data)
 
@@ -249,6 +269,7 @@ func (f *Field) Mount(data any) error {
 	return nil
 }
 
+// Bind the data into the given map
 func (f *Field) Bind(data map[string]any, key *string) error {
 	if len(f.Children) == 0 {
 		v, err := f.BeforeBind(f.Data)

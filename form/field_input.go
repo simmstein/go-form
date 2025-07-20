@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cast"
 )
 
+// Generates an input[type=text]
 func NewFieldText(name string) *Field {
 	f := NewField(name, "input").
 		WithOptions(NewOption("type", "text"))
@@ -11,6 +12,7 @@ func NewFieldText(name string) *Field {
 	return f
 }
 
+// Generates an input[type=number] with default transformers
 func NewFieldNumber(name string) *Field {
 	f := NewField(name, "input").
 		WithOptions(NewOption("type", "number")).
@@ -21,6 +23,7 @@ func NewFieldNumber(name string) *Field {
 	return f
 }
 
+// Generates an input[type=email]
 func NewFieldMail(name string) *Field {
 	f := NewField(name, "input").
 		WithOptions(NewOption("type", "email"))
@@ -28,6 +31,7 @@ func NewFieldMail(name string) *Field {
 	return f
 }
 
+// Generates an input[type=range]
 func NewFieldRange(name string) *Field {
 	f := NewField(name, "input").
 		WithOptions(NewOption("type", "range")).
@@ -38,6 +42,7 @@ func NewFieldRange(name string) *Field {
 	return f
 }
 
+// Generates an input[type=password]
 func NewFieldPassword(name string) *Field {
 	f := NewField(name, "input").
 		WithOptions(NewOption("type", "password"))
@@ -45,6 +50,7 @@ func NewFieldPassword(name string) *Field {
 	return f
 }
 
+// Generates an input[type=hidden]
 func NewFieldHidden(name string) *Field {
 	f := NewField(name, "input").
 		WithOptions(NewOption("type", "hidden"))
@@ -52,6 +58,7 @@ func NewFieldHidden(name string) *Field {
 	return f
 }
 
+// Generates an input[type=submit]
 func NewSubmit(name string) *Field {
 	f := NewField(name, "input").
 		WithOptions(NewOption("type", "submit"))

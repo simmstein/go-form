@@ -25,6 +25,7 @@ func DateBeforeMount(data any, format string) (any, error) {
 	return data, nil
 }
 
+// Generates an input[type=date] with default transformers
 func NewFieldDate(name string) *Field {
 	f := NewField(name, "input").
 		WithOptions(NewOption("type", "date")).
@@ -38,6 +39,7 @@ func NewFieldDate(name string) *Field {
 	return f
 }
 
+// Generates an input[type=datetime] with default transformers
 func NewFieldDatetime(name string) *Field {
 	f := NewField(name, "input").
 		WithOptions(NewOption("type", "datetime")).
@@ -51,6 +53,7 @@ func NewFieldDatetime(name string) *Field {
 	return f
 }
 
+// Generates an input[type=datetime-local] with default transformers
 func NewFieldDatetimeLocal(name string) *Field {
 	f := NewField(name, "input").
 		WithOptions(
@@ -68,6 +71,7 @@ func NewFieldDatetimeLocal(name string) *Field {
 	return f
 }
 
+// Generates an input[type=time] with default transformers
 func NewFieldTime(name string) *Field {
 	f := NewField(name, "input").
 		WithOptions(NewOption("type", "time")).

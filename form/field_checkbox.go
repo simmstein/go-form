@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cast"
 )
 
+// Generates an input[type=checkbox]
 func NewFieldCheckbox(name string) *Field {
 	f := NewField(name, "input").
 		WithOptions(NewOption("type", "checkbox")).
