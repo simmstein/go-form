@@ -1,6 +1,7 @@
 package example
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/spf13/cast"
@@ -234,6 +235,6 @@ func CreateDataForm() *form.Form {
 				"class": "row",
 			}),
 		).
-		WithMethod("POST").
+		WithMethod(http.MethodPost).
 		WithAction("/")
 }
