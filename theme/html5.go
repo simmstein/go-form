@@ -56,7 +56,7 @@ var Html5 = map[string]string{
 		{{- if $isExpanded -}}
 			{{- if and (not $required) (not $isMultiple) -}}
 				<input value="" {{ if not $field.Data }}checked{{ end }} name="{{ $field.GetName }}" type="radio" id="{{ $field.GetId }}-0">
-				<label for="{{ $field.GetId }}-0">None</label>
+				<label for="{{ $field.GetId }}-0">{{ ($field.GetOption "empty_choice_label").Value }}</label>
 			{{- end -}}
 
 			{{- range $key, $choice := $choices.GetChoices -}}
@@ -65,7 +65,7 @@ var Html5 = map[string]string{
 			{{- end -}}
 		{{- else -}}
 			<select id="{{ .Field.GetId }}" {{ if $required }}required="required"{{ end }} {{ if $isMultiple }}multiple{{ end }} name="{{ .Field.GetName }}" {{ form_widget_attr .Field }}>
-				{{- if not $required -}}
+				{{- if and (not $required) (not $isMultiple) -}}
 					<option value="">{{ $emptyChoiceLabel }}</option>
 				{{- end -}}
 				{{- range $choice := $choices.GetChoices -}}
@@ -100,7 +100,7 @@ var Html5 = map[string]string{
 			</ul>
 		{{- end -}}
 	`,
-	"row": `<div class="row">
+	"row": `<div {{ form_row_attr .Field }}>
 		{{ $labelAfterWidget := and (.Field.HasOption "type") (eq (.Field.GetOption "type").Value "checkbox") }}
 
 		{{ if and (eq (len .Field.Children) 0) (not $labelAfterWidget) }}
