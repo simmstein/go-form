@@ -24,6 +24,7 @@ import (
 	"gitnet.fr/deblan/go-form/validation"
 )
 
+// Field represents a form
 type Form struct {
 	Fields       []*Field
 	GlobalFields []*Field
@@ -35,6 +36,7 @@ type Form struct {
 	RequestData  *url.Values
 }
 
+// Generates a new form with default properties
 func NewForm(fields ...*Field) *Form {
 	f := new(Form)
 	f.Method = "POST"
@@ -44,6 +46,7 @@ func NewForm(fields ...*Field) *Form {
 	return f
 }
 
+// Checks if the form contains an option using its name
 func (f *Form) HasOption(name string) bool {
 	for _, option := range f.Options {
 		if option.Name == name {
@@ -54,6 +57,7 @@ func (f *Form) HasOption(name string) bool {
 	return false
 }
 
+// Returns an option using its name
 func (f *Form) GetOption(name string) *Option {
 	for _, option := range f.Options {
 		if option.Name == name {
@@ -64,12 +68,14 @@ func (f *Form) GetOption(name string) *Option {
 	return nil
 }
 
+// Resets the form errors
 func (f *Form) ResetErrors() *Form {
 	f.Errors = []validation.Error{}
 
 	return f
 }
 
+// Appends children
 func (f *Form) Add(fields ...*Field) {
 	for _, field := range fields {
 		field.Form = f
@@ -77,6 +83,8 @@ func (f *Form) Add(fields ...*Field) {
 	}
 }
 
+// Configures its children deeply
+// This function must be called after adding all fields
 func (f *Form) End() *Form {
 	for _, c := range f.Fields {
 		f.AddGlobalField(c)
@@ -85,6 +93,7 @@ func (f *Form) End() *Form {
 	return f
 }
 
+// Configures its children deeply
 func (f *Form) AddGlobalField(field *Field) {
 	f.GlobalFields = append(f.GlobalFields, field)
 
@@ -93,6 +102,7 @@ func (f *Form) AddGlobalField(field *Field) {
 	}
 }
 
+// Checks if the form contains a child using its name
 func (f *Form) HasField(name string) bool {
 	for _, field := range f.Fields {
 		if name == field.Name {
@@ -103,6 +113,7 @@ func (f *Form) HasField(name string) bool {
 	return false
 }
 
+// Returns a child using its name
 func (f *Form) GetField(name string) *Field {
 	var result *Field
 
@@ -116,24 +127,28 @@ func (f *Form) GetField(name string) *Field {
 	return result
 }
 
+// Sets the method of the format (http.MethodPost, http.MethodGet, ...)
 func (f *Form) WithMethod(v string) *Form {
 	f.Method = v
 
 	return f
 }
 
+// Sets the name of the form (used to compute name of fields)
 func (f *Form) WithName(v string) *Form {
 	f.Name = v
 
 	return f
 }
 
+// Sets the action of the form (eg: "/")
 func (f *Form) WithAction(v string) *Form {
 	f.Action = v
 
 	return f
 }
 
+// Appends options to the form
 func (f *Form) WithOptions(options ...*Option) *Form {
 	for _, option := range options {
 		f.Options = append(f.Options, option)
@@ -142,6 +157,7 @@ func (f *Form) WithOptions(options ...*Option) *Form {
 	return f
 }
 
+// Checks the a form is valid
 func (f *Form) IsValid() bool {
 	isValid := true
 	f.ResetErrors()
@@ -154,6 +170,7 @@ func (f *Form) IsValid() bool {
 	return isValid
 }
 
+// Copies datas from a struct to the form
 func (f *Form) Mount(data any) error {
 	props, err := util.InspectStruct(data)
 
@@ -174,6 +191,7 @@ func (f *Form) Mount(data any) error {
 	return nil
 }
 
+// Copies datas from the form to a struct
 func (f *Form) Bind(data any) error {
 	toBind := make(map[string]any)
 
@@ -184,6 +202,7 @@ func (f *Form) Bind(data any) error {
 	return mapstructure.Decode(toBind, data)
 }
 
+// Processes a request
 func (f *Form) HandleRequest(req *http.Request) {
 	var data url.Values
 
@@ -213,6 +232,7 @@ func (f *Form) HandleRequest(req *http.Request) {
 	}
 }
 
+// Checks if the form is submitted
 func (f *Form) IsSubmitted() bool {
 	return f.RequestData != nil
 }
