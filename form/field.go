@@ -49,15 +49,17 @@ type Field struct {
 	BeforeBind  func(data any) (any, error)
 	Validate    func(f *Field) bool
 	IsSlice     bool
+	IsFixedName bool
 	Form        *Form
 	Parent      *Field
 }
 
 func NewField(name, widget string) *Field {
 	f := &Field{
-		Name:   name,
-		Widget: widget,
-		Data:   nil,
+		Name:        name,
+		IsFixedName: false,
+		Widget:      widget,
+		Data:        nil,
 	}
 
 	f.PrepareView = func() map[string]any {
@@ -111,6 +113,12 @@ func (f *Field) WithOptions(options ...*Option) *Field {
 	return f
 }
 
+func (f *Field) WithData(data any) *Field {
+	f.Data = data
+
+	return f
+}
+
 func (f *Field) ResetErrors() *Field {
 	f.Errors = []validation.Error{}
 
@@ -119,6 +127,12 @@ func (f *Field) ResetErrors() *Field {
 
 func (f *Field) WithSlice() *Field {
 	f.IsSlice = true
+
+	return f
+}
+
+func (f *Field) WithFixedName() *Field {
+	f.IsFixedName = true
 
 	return f
 }
@@ -178,6 +192,10 @@ func (f *Field) GetChild(name string) *Field {
 
 func (f *Field) GetName() string {
 	var name string
+
+	if f.IsFixedName {
+		return f.Name
+	}
 
 	if f.Form != nil && f.Form.Name != "" {
 		name = fmt.Sprintf("%s[%s]", f.Form.Name, f.Name)
