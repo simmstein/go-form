@@ -45,6 +45,13 @@ func NewFieldPassword(name string) *Field {
 	return f
 }
 
+func NewFieldHidden(name string) *Field {
+	f := NewField(name, "input").
+		WithOptions(NewOption("type", "hidden"))
+
+	return f
+}
+
 func NewSubmit(name string) *Field {
 	f := NewField(name, "input").
 		WithOptions(NewOption("type", "submit"))
