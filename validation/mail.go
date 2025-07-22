@@ -30,17 +30,12 @@ func NewMail() Mail {
 func (c Mail) Validate(data any) []Error {
 	errors := []Error{}
 
-	notBlank := NotBlank{}
-	nbErrs := notBlank.Validate(data)
+	if len(NewNotBlank().Validate(data)) == 0 {
+		_, err := mail.ParseAddress(data.(string))
 
-	if len(nbErrs) > 0 {
-		return errors
-	}
-
-	_, err := mail.ParseAddress(data.(string))
-
-	if err != nil {
-		errors = append(errors, Error(c.Message))
+		if err != nil {
+			errors = append(errors, Error(c.Message))
+		}
 	}
 
 	return errors

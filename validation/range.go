@@ -60,7 +60,7 @@ func (c Range) WithRange(vMin, vMax float64) Range {
 }
 
 func (c Range) Validate(data any) []Error {
-	if c.Min == nil && c.Max == nil {
+	if c.Min == nil && c.Max == nil || len(NewNotBlank().Validate(data)) != 0 {
 		return []Error{}
 	}
 

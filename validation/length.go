@@ -60,7 +60,7 @@ func (c Length) WithExact(v int) Length {
 }
 
 func (c Length) Validate(data any) []Error {
-	if c.Min == nil && c.Max == nil {
+	if (c.Min == nil && c.Max == nil) || len(NewNotBlank().Validate(data)) != 0 {
 		return []Error{}
 	}
 

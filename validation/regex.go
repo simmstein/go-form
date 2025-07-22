@@ -50,29 +50,25 @@ func (c Regex) MustNotMatch() Regex {
 
 func (c Regex) Validate(data any) []Error {
 	errors := []Error{}
-	notBlank := NotBlank{}
-	nbErrs := notBlank.Validate(data)
 
-	if len(nbErrs) > 0 {
-		return errors
-	}
+	if len(NewNotBlank().Validate(data)) == 0 {
+		t := reflect.TypeOf(data)
 
-	t := reflect.TypeOf(data)
-
-	if t.Kind() == reflect.Ptr {
-		t = t.Elem()
-	}
-
-	switch t.Kind() {
-	case reflect.String:
-		matched, _ := regexp.MatchString(c.Expression, data.(string))
-
-		if !matched && c.Match || matched && !c.Match {
-			errors = append(errors, Error(c.Message))
+		if t.Kind() == reflect.Ptr {
+			t = t.Elem()
 		}
 
-	default:
-		errors = append(errors, Error(c.TypeErrorMessage))
+		switch t.Kind() {
+		case reflect.String:
+			matched, _ := regexp.MatchString(c.Expression, data.(string))
+
+			if !matched && c.Match || matched && !c.Match {
+				errors = append(errors, Error(c.Message))
+			}
+
+		default:
+			errors = append(errors, Error(c.TypeErrorMessage))
+		}
 	}
 
 	return errors
