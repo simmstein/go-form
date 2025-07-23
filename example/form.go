@@ -109,6 +109,7 @@ func CreateDataForm() *form.Form {
 					).
 					WithConstraints(
 						validation.NewRange().WithRange(1, 20),
+						validation.NewIsEven(),
 					),
 				form.NewFieldRange("Range").
 					WithOptions(
