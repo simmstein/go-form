@@ -1,5 +1,7 @@
 package form
 
+import "strings"
+
 // @license GNU AGPL version 3 or any later version
 //
 // This program is free software: you can redistribute it and/or modify
@@ -25,4 +27,52 @@ func NewOption(name string, value any) *Option {
 		Name:  name,
 		Value: value,
 	}
+}
+
+func (o *Option) AsBool() bool {
+	return o.Value.(bool)
+}
+
+func (o *Option) AsString() string {
+	return o.Value.(string)
+}
+
+func (o *Option) AsAttrs() Attrs {
+	return o.Value.(Attrs)
+}
+
+type Attrs map[string]string
+
+func (a Attrs) Append(name, value string) {
+	v, ok := a[name]
+
+	if !ok {
+		v = value
+	} else {
+		v = value + " " + v
+	}
+
+	a[name] = v
+}
+
+func (a Attrs) Prepend(name, value string) {
+	v, ok := a[name]
+
+	if !ok {
+		v = value
+	} else {
+		v += " " + value
+	}
+
+	a[name] = v
+}
+
+func (a Attrs) Remove(name, value string) {
+	v, ok := a[name]
+
+	if !ok {
+		v = strings.ReplaceAll(v, value, "")
+	}
+
+	a[name] = v
 }

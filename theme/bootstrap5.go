@@ -1,5 +1,12 @@
 package theme
 
+import (
+	"gitnet.fr/deblan/go-form/form"
+	"gitnet.fr/deblan/go-form/validation"
+	. "maragu.dev/gomponents"
+	. "maragu.dev/gomponents/html"
+)
+
 // @license GNU AGPL version 3 or any later version
 //
 // This program is free software: you can redistribute it and/or modify
@@ -15,141 +22,109 @@ package theme
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-var Bootstrap5 = map[string]string{
-	"form": `<form action="{{ .Form.Action }}" method="{{ .Form.Method }}" {{ form_attr .Form }}>
-		{{- form_error .Form nil -}}
+var Bootstrap5 = ExtendTheme(Html5, func() map[string]RenderFunc {
+	theme := make(map[string]RenderFunc)
 
-		{{- form_help .Form -}}
+	theme["form_help"] = func(parent map[string]RenderFunc, args ...any) Node {
+		form := args[0].(*form.Form)
 
-		{{- range $field := .Form.Fields -}}
-			{{- form_row $field -}}
-		{{- end -}}
-	</form>`,
-	"attributes": `{{ range $key, $value := .Attributes }}{{ $key }}="{{ $value }}"{{ end }}`,
-	"help": `
-		{{- if gt (len .Help) 0 -}}
-			<div class="form-help">{{ .Help }}</div>
-		{{- end -}}
-	`,
-	"label": `
-		{{ if .Field.HasOption "label" }}
-			{{ $label := (.Field.GetOption "label").Value }}
+		form.GetOption("help_attr").AsAttrs().Append("class", "form-text")
 
-			{{- if ne $label "" -}}
-				<label for="{{ .Field.GetId }}" {{ form_label_attr .Field }}  class="form-label">{{ $label }}</label>
-			{{- end -}}
-		{{- end -}}
-	`,
-	"input": `
-		{{- $type := .Field.GetOption "type" -}}
-		{{- $checked := and (eq (.Field.GetOption "type").Value "checkbox") (.Field.Data) -}}
-		{{- $required := and (.Field.HasOption "required") (.Field.GetOption "required").Value -}}
-		{{- $value := .Field.Data -}}
-		{{- $class := "form-control" }}
+		return parent["base_form_help"](parent, form)
+	}
 
-		{{- if eq $type.Value "checkbox" -}}
-			{{- $value = 1 -}}
-		{{- end -}}
-		
-		{{- if or (eq $type.Value "checkbox") (eq $type.Value "radio") -}}
-			{{- $class = "form-check-input" -}}
-		{{- end -}}
+	theme["form_widget_help"] = func(parent map[string]RenderFunc, args ...any) Node {
+		field := args[0].(*form.Field)
 
-		{{- if eq $type.Value "range" -}}
-			{{- $class = "form-range" -}}
-		{{- end -}}
+		field.GetOption("help_attr").AsAttrs().Append("class", "form-text")
 
-		{{- if or (eq $type.Value "submit") (eq $type.Value "reset") (eq $type.Value "button") -}}
-			{{- $class = "" -}}
+		return parent["base_form_widget_help"](parent, field)
+	}
 
-			{{ if .Field.HasOption "attr" }}
-				{{ $class = (.Field.GetOption "attr").Value.attr.class }}
-			{{ end }}
-		{{- end -}}
+	theme["input"] = func(parent map[string]RenderFunc, args ...any) Node {
+		field := args[0].(*form.Field)
+		fieldType := field.GetOption("type").AsString()
 
-		<input id="{{ .Field.GetId }}" {{ if $checked }}checked{{ end }} {{ if $required }}required="required"{{ end }} name="{{ .Field.GetName }}" value="{{ $value }}" type="{{ $type.Value }}" {{ form_widget_attr .Field }} class="{{ $class }}">
-	`,
-	"textarea": `
-		<textarea id="{{ .Field.GetId }}" {{ if .Field.HasOption "required" }}{{ if (.Field.GetOption "required").Value }}required="required"{{ end }}{{ end }} name="{{ .Field.GetName }}" {{ form_widget_attr .Field }} class="form-control">{{ .Field.Data }}</textarea>
-	`,
-	"choice": `
-		{{- $required := and (.Field.HasOption "required") (.Field.GetOption "required").Value -}}
-		{{- $isExpanded := (.Field.GetOption "expanded").Value -}}
-		{{- $isMultiple := (.Field.GetOption "multiple").Value -}}
-		{{- $emptyChoiceLabel := (.Field.GetOption "empty_choice_label").Value -}}
-		{{- $choices := (.Field.GetOption "choices").Value -}}
-		{{- $field := .Field -}}
-		{{- $keyAdd := 0 -}}
+		var class string
 
-		{{- if and (not $required) (not $isMultiple) -}}
-			{{- $keyAdd = 1 -}}
-		{{- end -}}
+		if fieldType == "checkbox" || fieldType == "radio" {
+			class = "form-check-input"
+		} else if fieldType == "range" {
+			class = "form-range"
+		} else {
+			class = "form-control"
+		}
 
-		{{- if $isExpanded -}}
-			{{- if and (not $required) (not $isMultiple) -}}
-				<div class="form-check">
-					<input value="" {{ if not $field.Data }}checked{{ end }} name="{{ $field.GetName }}" type="radio" id="{{ $field.GetId }}-0" class="form-check-input">
-					<label for="{{ $field.GetId }}-0" class="form-check-label">{{ ($field.GetOption "empty_choice_label").Value }}</label>
-				</div>
-			{{- end -}}
+		field.GetOption("attr").AsAttrs().Append("class", class)
 
-			{{- range $key, $choice := $choices.GetChoices -}}
-				<div class="form-check">
-					<input name="{{ $field.GetName }}" type="{{ if $isMultiple }}checkbox{{ else }}radio{{ end }}" value="{{ $choice.Value }}" {{ if $choices.Match $field $choice.Value }}checked{{ end }} id="{{ $field.GetId }}-{{ sum $key $keyAdd }}" class="form-check-input">
-					<label for="{{ $field.GetId }}-{{ sum $key $keyAdd }}" class="form-check-label">{{- $choice.Label -}}</label>
-				</div>
-			{{- end -}}
-		{{- else -}}
-			<select id="{{ .Field.GetId }}" {{ if $required }}required="required"{{ end }} {{ if $isMultiple }}multiple{{ end }} name="{{ .Field.GetName }}" {{ form_widget_attr .Field }} class="form-select">
-				{{- if and (not $required) (not $isMultiple) -}}
-					<option value="">{{ $emptyChoiceLabel }}</option>
-				{{- end -}}
-				{{- range $choice := $choices.GetChoices -}}
-					<option value="{{ $choice.Value }}" {{ if $choices.Match $field $choice.Value }}selected{{ end }}>{{ $choice.Label }}</option>
-				{{- end -}}
-			</select>
-		{{- end -}}
-	`,
-	"sub_form": `
-		<fieldset id="{{ .Field.GetId }}">
-			{{ if .Field.HasOption "label" }}
-				{{ $label := (.Field.GetOption "label").Value }}
+		return parent["base_input"](parent, field)
+	}
 
-				{{- if ne $label "" -}}
-					<legend {{ form_label_attr .Field }}>{{ $label }}</legend>
-				{{- end -}}
-			{{- end -}}
+	theme["form_label"] = func(parent map[string]RenderFunc, args ...any) Node {
+		field := args[0].(*form.Field)
 
-			{{ form_widget_help .Field }}
+		field.GetOption("label_attr").AsAttrs().Append("class", "form-label")
 
-			{{- range $field := .Field.Children -}}
-				{{- form_row $field -}}
-			{{- end -}}
-		</fieldset>
-	`,
-	"error": `
-		{{- if gt (len .Errors) 0 -}}
-			<div class="invalid-feedback d-block">
-				{{- range $error := .Errors -}}
-					<div>{{- $error -}}</div>
-				{{- end -}}
-			</div>
-		{{- end -}}
-	`,
-	"row": `<div {{ form_row_attr .Field }}>
-		{{ $labelAfterWidget := and (.Field.HasOption "type") (eq (.Field.GetOption "type").Value "checkbox") }}
+		return parent["base_form_label"](parent, field)
+	}
 
-		{{ if and (eq (len .Field.Children) 0) (not $labelAfterWidget) }}
-			{{- form_label .Field -}}
-		{{ end }}
+	theme["choice"] = func(parent map[string]RenderFunc, args ...any) Node {
+		field := args[0].(*form.Field)
 
-		{{- form_widget .Field -}}
-		{{- form_error nil .Field -}}
+		if !field.HasOption("expanded") || !field.GetOption("expanded").AsBool() {
+			field.GetOption("attr").AsAttrs().Append("class", "form-control")
+		}
 
-		{{ if and (eq (len .Field.Children) 0) ($labelAfterWidget) }}
-			{{- form_label .Field -}}
-		{{ end }}
+		return parent["base_choice"](parent, field)
+	}
 
-		{{- form_widget_help .Field -}}
-	</div>`,
-}
+	theme["choice_expanded_item"] = func(parent map[string]RenderFunc, args ...any) Node {
+		return Div(Class("form-check"), args[0].(Node))
+	}
+
+	theme["textarea"] = func(parent map[string]RenderFunc, args ...any) Node {
+		field := args[0].(*form.Field)
+
+		field.GetOption("attr").AsAttrs().Append("class", "form-control")
+
+		return parent["base_textarea"](parent, field)
+	}
+
+	theme["form_row"] = func(parent map[string]RenderFunc, args ...any) Node {
+		field := args[0].(*form.Field)
+
+		if field.HasOption("type") {
+			fieldType := field.GetOption("type").AsString()
+
+			if fieldType == "checkbox" || fieldType == "radio" {
+				field.GetOption("row_attr").AsAttrs().Append("class", "form-check")
+			}
+		}
+
+		if field.Widget == "choice" && field.HasOption("expanded") && field.GetOption("expanded").AsBool() {
+			field.GetOption("label_attr").AsAttrs().Remove("class", "form-label")
+			field.GetOption("label_attr").AsAttrs().Append("class", "form-check-label")
+			field.GetOption("attr").AsAttrs().Append("class", "form-check-input")
+		}
+
+		return parent["base_form_row"](parent, field)
+	}
+
+	theme["errors"] = func(parent map[string]RenderFunc, args ...any) Node {
+		errors := args[0].([]validation.Error)
+
+		var result []Node
+
+		for _, v := range errors {
+			result = append(result, Text(string(v)))
+			result = append(result, Br())
+		}
+
+		return Div(
+			Class("invalid-feedback d-block"),
+			Group(result),
+		)
+	}
+
+	return theme
+})

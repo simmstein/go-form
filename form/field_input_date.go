@@ -37,7 +37,7 @@ func DateBeforeMount(data any, format string) (any, error) {
 		}
 	}
 
-	return data, nil
+	return nil, nil
 }
 
 // Generates an input[type=date] with default transformers
