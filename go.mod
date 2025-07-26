@@ -7,3 +7,9 @@ require (
 	github.com/spf13/cast v1.9.2
 	github.com/yassinebenaid/godump v0.11.1
 )
+
+require (
+	github.com/samber/lo v1.51.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
+	maragu.dev/gomponents v1.1.0 // indirect
+)

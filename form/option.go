@@ -26,3 +26,15 @@ func NewOption(name string, value any) *Option {
 		Value: value,
 	}
 }
+
+func (o *Option) AsBool() bool {
+	return o.Value.(bool)
+}
+
+func (o *Option) AsString() string {
+	return o.Value.(string)
+}
+
+func (o *Option) AsMapString() map[string]string {
+	return o.Value.(map[string]string)
+}
