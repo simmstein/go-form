@@ -49,9 +49,21 @@ func (r *Renderer) RenderForm(form *form.Form) template.HTML {
 }
 
 func (r *Renderer) FuncMap() template.FuncMap {
-	return template.FuncMap{
-		"form": r.RenderForm,
+	funcs := template.FuncMap{}
+
+	for _, name := range []string{"form", "form_errors"} {
+		funcs[name] = func(form *form.Form) template.HTML {
+			return toTemplateHtml(r.Theme[name](r.Theme, form))
+		}
 	}
+
+	for _, name := range []string{"form_row", "form_widget", "form_label", "form_widget_errors"} {
+		funcs[name] = func(field *form.Field) template.HTML {
+			return toTemplateHtml(r.Theme[name](r.Theme, field))
+		}
+	}
+
+	return funcs
 }
 
 func (r *Renderer) Render(name, tpl string, args any) template.HTML {
