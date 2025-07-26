@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+### Added
+
+- feat: replace templates with gomponents
+- feat: add constraints (isodd, iseven)
+
 ## v1.1.0
 
 ### Added
