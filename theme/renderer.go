@@ -23,7 +23,7 @@ import (
 	"maragu.dev/gomponents"
 )
 
-type RenderFunc func(args ...any) gomponents.Node
+type RenderFunc func(parent map[string]RenderFunc, args ...any) gomponents.Node
 
 type Renderer struct {
 	Theme map[string]RenderFunc
@@ -45,7 +45,7 @@ func toTemplateHtml(n gomponents.Node) template.HTML {
 }
 
 func (r *Renderer) RenderForm(form *form.Form) template.HTML {
-	return toTemplateHtml(r.Theme["form"](form))
+	return toTemplateHtml(r.Theme["form"](r.Theme, form))
 }
 
 func (r *Renderer) FuncMap() template.FuncMap {

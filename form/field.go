@@ -95,6 +95,13 @@ func NewField(name, widget string) *Field {
 		return data, nil
 	}
 
+	f.WithOptions(
+		NewOption("attr", Attrs{}),
+		NewOption("row_attr", Attrs{}),
+		NewOption("label_attr", Attrs{}),
+		NewOption("help_attr", Attrs{}),
+	)
+
 	f.Validate = FieldValidation
 
 	return f

@@ -28,27 +28,27 @@ import (
 var Html5 = CreateTheme(func() map[string]RenderFunc {
 	theme := make(map[string]RenderFunc)
 
-	theme["attributes"] = func(args ...any) Node {
+	theme["attributes"] = func(parent map[string]RenderFunc, args ...any) Node {
 		var result []Node
 
-		for i, v := range args[0].(map[string]string) {
+		for i, v := range args[0].(form.Attrs) {
 			result = append(result, Attr(i, v))
 		}
 
 		return Group(result)
 	}
 
-	theme["form_attributes"] = func(args ...any) Node {
+	theme["form_attributes"] = func(parent map[string]RenderFunc, args ...any) Node {
 		form := args[0].(*form.Form)
 
 		if !form.HasOption("attr") {
 			return Raw("")
 		}
 
-		return theme["attributes"](form.GetOption("attr").AsMapString())
+		return parent["attributes"](parent, form.GetOption("attr").AsAttrs())
 	}
 
-	theme["errors"] = func(args ...any) Node {
+	theme["errors"] = func(parent map[string]RenderFunc, args ...any) Node {
 		errors := args[0].([]validation.Error)
 
 		var result []Node
@@ -58,73 +58,81 @@ var Html5 = CreateTheme(func() map[string]RenderFunc {
 		}
 
 		return Ul(
-			Class("form-errors"),
 			Group(result),
 		)
 	}
 
-	theme["form_errors"] = func(args ...any) Node {
+	theme["form_errors"] = func(parent map[string]RenderFunc, args ...any) Node {
 		form := args[0].(*form.Form)
 
 		return If(
 			len(form.Errors) > 0,
-			theme["errors"](form.Errors),
+			parent["errors"](parent, form.Errors),
 		)
 	}
 
-	theme["form_widget_errors"] = func(args ...any) Node {
+	theme["form_widget_errors"] = func(parent map[string]RenderFunc, args ...any) Node {
 		field := args[0].(*form.Field)
 
 		return If(
 			len(field.Errors) > 0,
-			theme["errors"](field.Errors),
+			parent["errors"](parent, field.Errors),
 		)
 	}
 
-	theme["help"] = func(args ...any) Node {
+	theme["help"] = func(parent map[string]RenderFunc, args ...any) Node {
 		help := args[0].(string)
+		var extra Node
 
 		if len(help) == 0 {
 			return Raw("")
 		}
 
+		if len(args) == 2 {
+			extra = args[1].(Node)
+		}
+
 		return Div(
-			Class("form-help"),
-			Text("ok"),
+			Text(help),
+			extra,
 		)
 	}
 
-	theme["form_help"] = func(args ...any) Node {
+	theme["form_help"] = func(parent map[string]RenderFunc, args ...any) Node {
 		form := args[0].(*form.Form)
 
 		if !form.HasOption("help") {
 			return Raw("")
 		}
 
-		return theme["help"](form.GetOption("help").AsString())
+		return parent["help"](
+			parent,
+			form.GetOption("help").AsString(),
+			parent["attributes"](parent, form.GetOption("help_attr").AsAttrs()),
+		)
 	}
 
-	theme["form_widget_help"] = func(args ...any) Node {
+	theme["form_widget_help"] = func(parent map[string]RenderFunc, args ...any) Node {
 		field := args[0].(*form.Field)
 
 		if !field.HasOption("help") {
 			return Raw("")
 		}
 
-		return theme["help"](field.GetOption("help").AsString())
+		return parent["help"](
+			parent,
+			field.GetOption("help").AsString(),
+			parent["attributes"](parent, field.GetOption("help_attr").AsAttrs()),
+		)
 	}
 
-	theme["label_attributes"] = func(args ...any) Node {
+	theme["label_attributes"] = func(parent map[string]RenderFunc, args ...any) Node {
 		field := args[0].(*form.Field)
 
-		if !field.HasOption("label_attr") {
-			return Raw("")
-		}
-
-		return theme["attributes"](field.GetOption("label_attr").AsMapString())
+		return parent["attributes"](parent, field.GetOption("label_attr").AsAttrs())
 	}
 
-	theme["form_label"] = func(args ...any) Node {
+	theme["form_label"] = func(parent map[string]RenderFunc, args ...any) Node {
 		field := args[0].(*form.Field)
 
 		if !field.HasOption("label") {
@@ -134,36 +142,31 @@ var Html5 = CreateTheme(func() map[string]RenderFunc {
 		label := field.GetOption("label").AsString()
 
 		return If(len(label) > 0, Label(
-			Class("form-label"),
 			For(field.GetId()),
-			theme["label_attributes"](field),
+			parent["label_attributes"](parent, field),
 			Text(label),
 		))
 	}
 
-	theme["field_attributes"] = func(args ...any) Node {
+	theme["field_attributes"] = func(parent map[string]RenderFunc, args ...any) Node {
 		field := args[0].(*form.Field)
 
-		if !field.HasOption("attr") {
-			return Raw("")
-		}
-
-		return theme["attributes"](field.GetOption("attr").AsMapString())
+		return parent["attributes"](parent, field.GetOption("attr").AsAttrs())
 	}
 
-	theme["textarea_attributes"] = func(args ...any) Node {
-		return theme["field_attributes"](args...)
+	theme["textarea_attributes"] = func(parent map[string]RenderFunc, args ...any) Node {
+		return parent["field_attributes"](parent, args...)
 	}
 
-	theme["input_attributes"] = func(args ...any) Node {
-		return theme["field_attributes"](args...)
+	theme["input_attributes"] = func(parent map[string]RenderFunc, args ...any) Node {
+		return parent["field_attributes"](parent, args...)
 	}
 
-	theme["sub_form_attributes"] = func(args ...any) Node {
-		return theme["field_attributes"](args...)
+	theme["sub_form_attributes"] = func(parent map[string]RenderFunc, args ...any) Node {
+		return parent["field_attributes"](parent, args...)
 	}
 
-	theme["input"] = func(args ...any) Node {
+	theme["input"] = func(parent map[string]RenderFunc, args ...any) Node {
 		field := args[0].(*form.Field)
 		fieldType := "text"
 
@@ -184,11 +187,11 @@ var Html5 = CreateTheme(func() map[string]RenderFunc {
 			Value(value),
 			If(fieldType == "checkbox" && field.Data != false, Checked()),
 			If(field.HasOption("required") && field.GetOption("required").AsBool(), Required()),
-			theme["input_attributes"](field),
+			parent["input_attributes"](parent, field),
 		)
 	}
 
-	theme["choice_options"] = func(args ...any) Node {
+	theme["choice_options"] = func(parent map[string]RenderFunc, args ...any) Node {
 		field := args[0].(*form.Field)
 		choices := field.GetOption("choices").Value.(*form.Choices)
 
@@ -214,7 +217,15 @@ var Html5 = CreateTheme(func() map[string]RenderFunc {
 		return Group(options)
 	}
 
-	theme["choice_expanded"] = func(args ...any) Node {
+	theme["choice_expanded_item"] = func(parent map[string]RenderFunc, args ...any) Node {
+		return args[0].(Node)
+	}
+
+	theme["choice_attributes"] = func(parent map[string]RenderFunc, args ...any) Node {
+		return parent["field_attributes"](parent, args...)
+	}
+
+	theme["choice_expanded"] = func(parent map[string]RenderFunc, args ...any) Node {
 		field := args[0].(*form.Field)
 		choices := field.GetOption("choices").Value.(*form.Choices)
 
@@ -227,40 +238,48 @@ var Html5 = CreateTheme(func() map[string]RenderFunc {
 		if !isMultiple && !isRequired {
 			id := fmt.Sprintf("%s-%s", field.GetId(), "none")
 
-			items = append(items, Group([]Node{
+			items = append(items, parent["choice_expanded_item"](parent, Group([]Node{
 				Input(
 					Name(field.GetName()),
 					ID(id),
 					Value(""),
 					Type("radio"),
-					theme["input_attributes"](field),
+					parent["choice_attributes"](parent, field),
 					If(cast.ToString(field.Data) == "", Checked()),
 				),
-				Label(For(id), Text(noneLabel)),
-			}))
+				Label(
+					For(id),
+					Text(noneLabel),
+					parent["label_attributes"](parent, field),
+				),
+			})))
 		}
 
 		for key, choice := range choices.GetChoices() {
 			id := fmt.Sprintf("%s-%d", field.GetId(), key)
 
-			items = append(items, Group([]Node{
+			items = append(items, parent["choice_expanded_item"](parent, Group([]Node{
 				Input(
 					Name(field.GetName()),
 					ID(id),
 					Value(choice.Value),
 					If(isMultiple, Type("checkbox")),
 					If(!isMultiple, Type("radio")),
-					theme["input_attributes"](field),
+					parent["choice_attributes"](parent, field),
 					If(choices.Match(field, choice.Value), Checked()),
 				),
-				Label(For(id), Text(choice.Label)),
-			}))
+				Label(
+					For(id),
+					Text(choice.Label),
+					parent["label_attributes"](parent, field),
+				),
+			})))
 		}
 
 		return Group(items)
 	}
 
-	theme["choice"] = func(args ...any) Node {
+	theme["choice"] = func(parent map[string]RenderFunc, args ...any) Node {
 		field := args[0].(*form.Field)
 
 		isRequired := field.HasOption("required") && field.GetOption("required").AsBool()
@@ -271,31 +290,32 @@ var Html5 = CreateTheme(func() map[string]RenderFunc {
 		_ = noneLabel
 
 		if isExpanded {
-			return theme["choice_expanded"](field)
+			return parent["choice_expanded"](parent, field)
 		} else {
 			return Select(
 				ID(field.GetId()),
 				If(isRequired, Required()),
 				If(isMultiple, Multiple()),
 				Name(field.GetName()),
-				theme["choice_options"](field),
+				parent["choice_attributes"](parent, field),
+				parent["choice_options"](parent, field),
 			)
 		}
 	}
 
-	theme["textarea"] = func(args ...any) Node {
+	theme["textarea"] = func(parent map[string]RenderFunc, args ...any) Node {
 		field := args[0].(*form.Field)
 
 		return Textarea(
 			Name(field.GetName()),
 			ID(field.GetId()),
 			If(field.HasOption("required") && field.GetOption("required").AsBool(), Required()),
-			theme["textarea_attributes"](field),
+			parent["textarea_attributes"](parent, field),
 			Text(cast.ToString(field.Data)),
 		)
 	}
 
-	theme["sub_form_label"] = func(args ...any) Node {
+	theme["sub_form_label"] = func(parent map[string]RenderFunc, args ...any) Node {
 		field := args[0].(*form.Field)
 
 		if !field.HasOption("label") {
@@ -305,88 +325,92 @@ var Html5 = CreateTheme(func() map[string]RenderFunc {
 		label := field.GetOption("label").AsString()
 
 		return If(len(label) > 0, Legend(
-			Class("form-label"),
-			theme["label_attributes"](field),
+			parent["label_attributes"](parent, field),
 			Text(label),
 		))
 
 	}
 
-	theme["sub_form_content"] = func(args ...any) Node {
+	theme["sub_form_content"] = func(parent map[string]RenderFunc, args ...any) Node {
 		field := args[0].(*form.Field)
 
-		return theme["form_fields"](field.Children)
+		return parent["form_fields"](parent, field.Children)
 	}
 
-	theme["sub_form"] = func(args ...any) Node {
+	theme["sub_form"] = func(parent map[string]RenderFunc, args ...any) Node {
 		field := args[0].(*form.Field)
 
 		return FieldSet(
 			ID(field.GetId()),
-			theme["sub_form_label"](field),
-			theme["sub_form_attributes"](field),
-			theme["sub_form_content"](field),
+			parent["sub_form_label"](parent, field),
+			parent["sub_form_attributes"](parent, field),
+			parent["sub_form_content"](parent, field),
 		)
 	}
 
-	theme["form_widget"] = func(args ...any) Node {
+	theme["form_widget"] = func(parent map[string]RenderFunc, args ...any) Node {
 		field := args[0].(*form.Field)
 
-		tpl, ok := theme[field.Widget]
+		tpl, ok := parent[field.Widget]
 
 		if !ok {
 			return Raw("Invalid field widget: " + field.Widget)
 		}
 
-		return tpl(field)
+		return tpl(parent, field)
 	}
 
-	theme["form_row"] = func(args ...any) Node {
+	theme["form_row"] = func(parent map[string]RenderFunc, args ...any) Node {
 		field := args[0].(*form.Field)
 
 		isCheckbox := field.HasOption("type") && field.GetOption("type").AsString() == "checkbox"
 		hasChildren := len(field.Children) > 0
 		labelAfter := isCheckbox && !hasChildren
-		label := theme["form_label"](field)
+		label := parent["form_label"](parent, field)
+		attrs := Raw("")
+
+		if field.HasOption("row_attr") {
+			attrs = parent["attributes"](parent, field.GetOption("row_attr").AsAttrs())
+		}
 
 		return Div(
-			Class("form-row"),
+			attrs,
 			If(!labelAfter, label),
-			theme["form_widget_errors"](field),
-			theme["form_widget"](field),
+			parent["form_widget_errors"](parent, field),
+			parent["form_widget"](parent, field),
 			If(labelAfter, label),
-			theme["form_widget_help"](field),
+			parent["form_widget_help"](parent, field),
 		)
 	}
 
-	theme["form_fields"] = func(args ...any) Node {
+	theme["form_fields"] = func(parent map[string]RenderFunc, args ...any) Node {
 		var items []Node
 
 		for _, item := range args[0].([]*form.Field) {
-			items = append(items, theme["form_row"](item))
+			items = append(items, parent["form_row"](parent, item))
 		}
 
 		return Group(items)
 	}
 
-	theme["form_content"] = func(args ...any) Node {
+	theme["form_content"] = func(parent map[string]RenderFunc, args ...any) Node {
 		form := args[0].(*form.Form)
 
 		return Div(
-			theme["form_errors"](form),
-			theme["form_help"](form),
-			theme["form_fields"](form.Fields),
+			parent["form_errors"](parent, form),
+			parent["form_help"](parent, form),
+			parent["form_fields"](parent, form.Fields),
 		)
 	}
 
-	theme["form"] = func(args ...any) Node {
+	theme["form"] = func(parent map[string]RenderFunc, args ...any) Node {
 		form := args[0].(*form.Form)
 
 		return Form(
 			Action(form.Action),
 			Method(form.Method),
-			theme["form_attributes"](form),
-			theme["form_content"](form),
+			parent["form_attributes"](parent, form),
+			parent["form_content"](parent, form),
 		)
 	}
 

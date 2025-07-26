@@ -8,8 +8,13 @@ func ExtendTheme(base map[string]RenderFunc, generator func() map[string]RenderF
 	extended := CreateTheme(generator)
 
 	for i, v := range base {
-		extended[i] = v
-		extended["base_"+i] = v
+		_, ok := extended[i]
+
+		if ok {
+			extended["base_"+i] = v
+		} else {
+			extended[i] = v
+		}
 	}
 
 	return extended

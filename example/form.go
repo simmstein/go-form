@@ -64,7 +64,7 @@ func CreateDataForm() *form.Form {
 			WithOptions(
 				form.NewOption("label", "Bytes"),
 				form.NewOption("required", true),
-				form.NewOption("row_attr", map[string]string{
+				form.NewOption("row_attr", form.Attrs{
 					"class": "col-12 mb-3",
 				}),
 			).
@@ -81,7 +81,7 @@ func CreateDataForm() *form.Form {
 			WithOptions(
 				form.NewOption("label", "Text"),
 				form.NewOption("help", "Must contain 'deblan'"),
-				form.NewOption("row_attr", map[string]string{
+				form.NewOption("row_attr", form.Attrs{
 					"class": "col-12 mb-3",
 				}),
 			).
@@ -91,7 +91,7 @@ func CreateDataForm() *form.Form {
 		form.NewFieldCheckbox("Checkbox").
 			WithOptions(
 				form.NewOption("label", "Checkbox"),
-				form.NewOption("row_attr", map[string]string{
+				form.NewOption("row_attr", form.Attrs{
 					"class": "col-12 mb-3",
 				}),
 			),
@@ -103,7 +103,7 @@ func CreateDataForm() *form.Form {
 				form.NewFieldNumber("Number").
 					WithOptions(
 						form.NewOption("label", "Number"),
-						form.NewOption("row_attr", map[string]string{
+						form.NewOption("row_attr", form.Attrs{
 							"class": "col-12 mb-3",
 						}),
 					).
@@ -114,14 +114,14 @@ func CreateDataForm() *form.Form {
 				form.NewFieldRange("Range").
 					WithOptions(
 						form.NewOption("label", "Range"),
-						form.NewOption("row_attr", map[string]string{
+						form.NewOption("row_attr", form.Attrs{
 							"class": "col-12 mb-3",
 						}),
 					),
 				form.NewFieldMail("Mail").
 					WithOptions(
 						form.NewOption("label", "Mail"),
-						form.NewOption("row_attr", map[string]string{
+						form.NewOption("row_attr", form.Attrs{
 							"class": "col-12 mb-3",
 						}),
 					).
@@ -131,7 +131,7 @@ func CreateDataForm() *form.Form {
 				form.NewFieldPassword("Password").
 					WithOptions(
 						form.NewOption("label", "Password"),
-						form.NewOption("row_attr", map[string]string{
+						form.NewOption("row_attr", form.Attrs{
 							"class": "col-12 mb-3",
 						}),
 					).
@@ -147,28 +147,28 @@ func CreateDataForm() *form.Form {
 				form.NewFieldDate("Date").
 					WithOptions(
 						form.NewOption("label", "Date"),
-						form.NewOption("row_attr", map[string]string{
+						form.NewOption("row_attr", form.Attrs{
 							"class": "col-12 mb-3",
 						}),
 					),
 				form.NewFieldDatetime("DateTime").
 					WithOptions(
 						form.NewOption("label", "Datetime"),
-						form.NewOption("row_attr", map[string]string{
+						form.NewOption("row_attr", form.Attrs{
 							"class": "col-12 mb-3",
 						}),
 					),
 				form.NewFieldDatetimeLocal("DateTimeLocal").
 					WithOptions(
 						form.NewOption("label", "DateTime local"),
-						form.NewOption("row_attr", map[string]string{
+						form.NewOption("row_attr", form.Attrs{
 							"class": "col-12 mb-3",
 						}),
 					),
 				form.NewFieldTime("Time").
 					WithOptions(
 						form.NewOption("label", "Time"),
-						form.NewOption("row_attr", map[string]string{
+						form.NewOption("row_attr", form.Attrs{
 							"class": "col-12 mb-3",
 						}),
 					),
@@ -180,7 +180,7 @@ func CreateDataForm() *form.Form {
 					WithOptions(
 						form.NewOption("choices", itemsChoices),
 						form.NewOption("label", "Select"),
-						form.NewOption("row_attr", map[string]string{
+						form.NewOption("row_attr", form.Attrs{
 							"class": "col-12 mb-3",
 						}),
 					).
@@ -192,7 +192,7 @@ func CreateDataForm() *form.Form {
 						form.NewOption("choices", itemsChoices),
 						form.NewOption("label", "Select (expanded)"),
 						form.NewOption("expanded", true),
-						form.NewOption("row_attr", map[string]string{
+						form.NewOption("row_attr", form.Attrs{
 							"class": "col-12 mb-3",
 						}),
 					),
@@ -202,7 +202,7 @@ func CreateDataForm() *form.Form {
 						form.NewOption("choices", itemsChoices),
 						form.NewOption("label", "Multiple select"),
 						form.NewOption("multiple", true),
-						form.NewOption("row_attr", map[string]string{
+						form.NewOption("row_attr", form.Attrs{
 							"class": "col-12 mb-3",
 						}),
 					).
@@ -217,7 +217,7 @@ func CreateDataForm() *form.Form {
 						form.NewOption("label", "Multiple select (expanded)"),
 						form.NewOption("expanded", true),
 						form.NewOption("multiple", true),
-						form.NewOption("row_attr", map[string]string{
+						form.NewOption("row_attr", form.Attrs{
 							"class": "col-12 mb-3",
 						}),
 					),
@@ -225,14 +225,18 @@ func CreateDataForm() *form.Form {
 		form.NewFieldCsrf("_csrf_token").WithData("my-token"),
 		form.NewSubmit("submit").
 			WithOptions(
-				form.NewOption("attr", map[string]string{
+				form.NewOption("attr", form.Attrs{
 					"class": "btn btn-primary",
 				}),
 			),
 	).
 		End().
 		WithOptions(
-			form.NewOption("attr", map[string]string{
+			form.NewOption("help", "form help"),
+			form.NewOption("help_attr", form.Attrs{
+				"class": "btn btn-primary",
+			}),
+			form.NewOption("attr", form.Attrs{
 				"class": "row",
 			}),
 		).
