@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## v1.2.0
+
 ### Added
 
 - feat: add go template functions to render a form, a field, etc.
