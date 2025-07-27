@@ -63,7 +63,15 @@ var Bootstrap5 = ExtendTheme(Html5, func() map[string]RenderFunc {
 	theme["form_label"] = func(parent map[string]RenderFunc, args ...any) Node {
 		field := args[0].(*form.Field)
 
-		field.GetOption("label_attr").AsAttrs().Append("class", "form-label")
+		var class string
+
+		if field.Widget == "choice" && field.HasOption("expanded") && field.GetOption("expanded").AsBool() {
+			class = "form-check-label"
+		} else {
+			class = "form-label"
+		}
+
+		field.GetOption("label_attr").AsAttrs().Append("class", class)
 
 		return parent["base_form_label"](parent, field)
 	}
@@ -99,12 +107,6 @@ var Bootstrap5 = ExtendTheme(Html5, func() map[string]RenderFunc {
 			if fieldType == "checkbox" || fieldType == "radio" {
 				field.GetOption("row_attr").AsAttrs().Append("class", "form-check")
 			}
-		}
-
-		if field.Widget == "choice" && field.HasOption("expanded") && field.GetOption("expanded").AsBool() {
-			field.GetOption("label_attr").AsAttrs().Remove("class", "form-label")
-			field.GetOption("label_attr").AsAttrs().Append("class", "form-check-label")
-			field.GetOption("attr").AsAttrs().Append("class", "form-check-input")
 		}
 
 		return parent["base_form_row"](parent, field)
