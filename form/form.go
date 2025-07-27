@@ -42,6 +42,10 @@ func NewForm(fields ...*Field) *Form {
 	f.Method = "POST"
 	f.Name = "form"
 	f.Add(fields...)
+	f.WithOptions(
+		NewOption("attr", Attrs{}),
+		NewOption("help_attr", Attrs{}),
+	)
 
 	return f
 }
