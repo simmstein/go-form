@@ -1,5 +1,12 @@
 ## [Unreleased]
 
+## v1.1.1
+
+### Fixed
+
+- feat(form): add default options
+- fix(choice): fix Match when field data is nil
+
 ## v1.1.0
 
 ### Added
