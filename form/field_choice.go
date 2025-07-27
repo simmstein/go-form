@@ -38,6 +38,10 @@ type Choices struct {
 }
 
 func (c *Choices) Match(f *Field, value string) bool {
+	if f.Data == nil {
+		return false
+	}
+
 	if f.IsSlice {
 		v := reflect.ValueOf(f.Data)
 
