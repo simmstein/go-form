@@ -61,7 +61,6 @@ type Field struct {
 	Children    []*Field
 	Constraints []validation.Constraint
 	Errors      []validation.Error
-	PrepareView func() map[string]any
 	BeforeMount func(data any) (any, error)
 	BeforeBind  func(data any) (any, error)
 	Validate    func(f *Field) bool
@@ -79,12 +78,6 @@ func NewField(name, widget string) *Field {
 		IsFixedName: false,
 		Widget:      widget,
 		Data:        nil,
-	}
-
-	f.PrepareView = func() map[string]any {
-		m := make(map[string]any)
-
-		return m
 	}
 
 	f.BeforeMount = func(data any) (any, error) {
