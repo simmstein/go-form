@@ -185,7 +185,7 @@ var Html5 = CreateTheme(func() map[string]RenderFunc {
 			ID(field.GetId()),
 			Type(fieldType),
 			Value(value),
-			If(fieldType == "checkbox" && field.Data != false, Checked()),
+			If(fieldType == "checkbox" && field.Data != nil && field.Data != false, Checked()),
 			If(field.HasOption("required") && field.GetOption("required").AsBool(), Required()),
 			parent["input_attributes"](parent, field),
 		)
