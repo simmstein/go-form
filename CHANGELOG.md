@@ -1,5 +1,15 @@
 ## [Unreleased]
 
+## v1.1.2
+
+### Added
+
+- chore(example): remove boostrap classes
+
+### Fixed
+
+- fix(theme): checkbox is check on nil value
+
 ## v1.1.1
 
 ### Fixed
