@@ -51,6 +51,8 @@ var Bootstrap5 = ExtendTheme(Html5, func() map[string]RenderFunc {
 			class = "form-check-input"
 		} else if fieldType == "range" {
 			class = "form-range"
+		} else if fieldType == "button" || fieldType == "submit" || fieldType == "reset" {
+			class = "btn"
 		} else {
 			class = "form-control"
 		}
