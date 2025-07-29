@@ -4,7 +4,6 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/yassinebenaid/godump"
 	"gitnet.fr/deblan/go-form/example"
@@ -170,8 +169,6 @@ func main() {
 			"Form": f,
 			"Dump": template.HTML(dump.Sprint(data)),
 		})
-
-		os.Stdout
 	})
 
 	log.Fatal(http.ListenAndServe(":1122", nil))
