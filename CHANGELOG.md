@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+## v1.1.3
+
+### Fixed
+
+- fix(form): replace existing option in WithOptions
+
 ## v1.1.2
 
 ### Added

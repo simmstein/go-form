@@ -155,7 +155,11 @@ func (f *Form) WithAction(v string) *Form {
 // Appends options to the form
 func (f *Form) WithOptions(options ...*Option) *Form {
 	for _, option := range options {
-		f.Options = append(f.Options, option)
+		if f.HasOption(option.Name) {
+			f.GetOption(option.Name).Value = option.Value
+		} else {
+			f.Options = append(f.Options, option)
+		}
 	}
 
 	return f
