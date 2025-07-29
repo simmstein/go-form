@@ -19,6 +19,7 @@ import (
 	"reflect"
 
 	"github.com/spf13/cast"
+	"gitnet.fr/deblan/go-form/validation"
 )
 
 type Choice struct {
@@ -123,6 +124,28 @@ func NewFieldChoice(name string) *Field {
 			NewOption("multiple", false),
 			NewOption("empty_choice_label", "None"),
 		)
+
+	f.Validate = func(field *Field) bool {
+		isValid := FieldValidation(field)
+
+		if len(validation.NewNotBlank().Validate(field.Data)) == 0 {
+			choices := field.GetOption("choices").Value.(*Choices)
+			isValidChoice := true
+
+			for _, choice := range choices.GetChoices() {
+				if !choices.Match(field, choice.Value) {
+					isValidChoice = false
+				}
+			}
+
+			if !isValidChoice {
+				field.Errors = append(field.Errors, validation.Error("This value is not valid."))
+				isValid = false
+			}
+		}
+
+		return isValid
+	}
 
 	f.WithBeforeBind(func(data any) (any, error) {
 		choices := f.GetOption("choices").Value.(*Choices)

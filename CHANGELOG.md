@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+## v1.1.5
+
+### Fixed
+
+- fix(input/choice): add specific validation func
+
 ## v1.1.4
 
 ### Fixed
