@@ -396,11 +396,11 @@ var Html5 = CreateTheme(func() map[string]RenderFunc {
 	theme["form_content"] = func(parent map[string]RenderFunc, args ...any) Node {
 		form := args[0].(*form.Form)
 
-		return Div(
+		return Group([]Node{
 			parent["form_errors"](parent, form),
 			parent["form_help"](parent, form),
 			parent["form_fields"](parent, form.Fields),
-		)
+		})
 	}
 
 	theme["form"] = func(parent map[string]RenderFunc, args ...any) Node {
