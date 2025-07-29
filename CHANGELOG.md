@@ -1,5 +1,12 @@
 ## [Unreleased]
 
+## v1.1.4
+
+### Fixed
+
+- fix(theme/bootstrap5): fix button class
+- fix(theme/html5): remove div wrapper on form content
+
 ## v1.1.3
 
 ### Fixed
