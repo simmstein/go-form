@@ -130,11 +130,11 @@ func NewFieldChoice(name string) *Field {
 
 		if len(validation.NewNotBlank().Validate(field.Data)) == 0 {
 			choices := field.GetOption("choices").Value.(*Choices)
-			isValidChoice := true
+			isValidChoice := false
 
 			for _, choice := range choices.GetChoices() {
-				if !choices.Match(field, choice.Value) {
-					isValidChoice = false
+				if choices.Match(field, choice.Value) {
+					isValidChoice = true
 				}
 			}
 
