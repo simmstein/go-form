@@ -12,7 +12,7 @@ Creating and processing HTML forms is hard and repetitive. You need to deal with
 
 ## Documentation
 
-* [Officiel documentation][doc]
+* [Official documentation][doc]
 * [Demo][demo]
 
 [go-form]: https://gitnet.fr/deblan/go-form
