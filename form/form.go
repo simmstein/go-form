@@ -16,8 +16,10 @@ package form
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import (
+	"maps"
 	"net/http"
 	"net/url"
+	"slices"
 
 	"github.com/mitchellh/mapstructure"
 	"gitnet.fr/deblan/go-form/util"
@@ -254,6 +256,6 @@ func (f *Form) ErrorsTree() map[string]any {
 
 	return map[string]any{
 		"errors":   f.Errors,
-		"children": errors,
+		"children": slices.Collect(maps.Values(errors)),
 	}
 }

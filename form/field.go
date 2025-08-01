@@ -17,6 +17,8 @@ package form
 
 import (
 	"fmt"
+	"maps"
+	"slices"
 	"strings"
 
 	"gitnet.fr/deblan/go-form/util"
@@ -348,7 +350,7 @@ func (f *Field) ErrorsTree(tree map[string]any, key *string) {
 					"formName": f.GetName(),
 				},
 				"errors":   []validation.Error{},
-				"children": errors,
+				"children": slices.Collect(maps.Values(errors)),
 			}
 		}
 	}
