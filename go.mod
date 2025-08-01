@@ -9,6 +9,7 @@ require (
 )
 
 require (
+	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/samber/lo v1.51.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
 	maragu.dev/gomponents v1.1.0 // indirect
