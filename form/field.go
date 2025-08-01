@@ -310,3 +310,46 @@ func (f *Field) Bind(data map[string]any, key *string) error {
 
 	return nil
 }
+
+func (f *Field) ErrorsTree(tree map[string]any, key *string) {
+	var index string
+
+	if key != nil {
+		index = *key
+	} else {
+		index = f.Name
+	}
+
+	if len(f.Children) == 0 {
+		if len(f.Errors) > 0 {
+			tree[index] = map[string]any{
+				"meta": map[string]any{
+					"id":       f.GetId(),
+					"name":     f.Name,
+					"formName": f.GetName(),
+				},
+				"errors": f.Errors,
+			}
+		}
+	} else {
+		errors := make(map[string]any)
+
+		for _, child := range f.Children {
+			if len(child.Errors) > 0 {
+				child.ErrorsTree(errors, &child.Name)
+			}
+		}
+
+		if len(errors) > 0 {
+			tree[index] = map[string]any{
+				"meta": map[string]any{
+					"id":       f.GetId(),
+					"name":     f.Name,
+					"formName": f.GetName(),
+				},
+				"errors":   []validation.Error{},
+				"children": errors,
+			}
+		}
+	}
+}

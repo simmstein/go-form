@@ -244,3 +244,19 @@ func (f *Form) HandleRequest(req *http.Request) {
 func (f *Form) IsSubmitted() bool {
 	return f.RequestData != nil
 }
+
+func (f *Form) ErrorsTree() map[string]any {
+	tree := make(map[string]any)
+
+	if len(f.Errors) > 0 {
+		tree["_form"] = map[string]any{
+			"errors": f.Errors,
+		}
+	}
+
+	for _, field := range f.Fields {
+		field.ErrorsTree(tree, nil)
+	}
+
+	return tree
+}

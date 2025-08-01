@@ -3,6 +3,7 @@
 ### Added
 
 - feat: add tag `field` to specify the naming strategy (case)
+- feat: add `ErrorsTree` methods on form and field
 
 ## v1.1.6
 
