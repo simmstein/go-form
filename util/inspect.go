@@ -17,7 +17,10 @@ package util
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
+
+	"github.com/iancoleman/strcase"
 )
 
 func InspectStruct(input interface{}) (map[string]interface{}, error) {
@@ -37,8 +40,22 @@ func InspectStruct(input interface{}) (map[string]interface{}, error) {
 	for i := 0; i < val.NumField(); i++ {
 		field := typ.Field(i)
 		value := val.Field(i)
+		tags := typ.Field(i).Tag
+		name := field.Name
 
-		result[field.Name] = value.Interface()
+		fieldTag := tags.Get("field")
+
+		fmt.Printf("%+v\n", fieldTag)
+
+		if fieldTag == "snake" {
+			name = strcase.ToSnake(name)
+		} else if fieldTag == "lowerCamel" {
+			name = strcase.ToLowerCamel(name)
+		}
+
+		fmt.Printf("%+v\n", name)
+
+		result[name] = value.Interface()
 	}
 
 	return result, nil
