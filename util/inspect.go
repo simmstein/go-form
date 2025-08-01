@@ -17,7 +17,6 @@ package util
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 
 	"github.com/iancoleman/strcase"
@@ -45,15 +44,9 @@ func InspectStruct(input interface{}) (map[string]interface{}, error) {
 
 		fieldTag := tags.Get("field")
 
-		fmt.Printf("%+v\n", fieldTag)
-
-		if fieldTag == "snake" {
-			name = strcase.ToSnake(name)
-		} else if fieldTag == "lowerCamel" {
+		if fieldTag == "lowerCamel" {
 			name = strcase.ToLowerCamel(name)
 		}
-
-		fmt.Printf("%+v\n", name)
 
 		result[name] = value.Interface()
 	}
