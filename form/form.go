@@ -246,17 +246,14 @@ func (f *Form) IsSubmitted() bool {
 }
 
 func (f *Form) ErrorsTree() map[string]any {
-	tree := make(map[string]any)
-
-	if len(f.Errors) > 0 {
-		tree["_form"] = map[string]any{
-			"errors": f.Errors,
-		}
-	}
+	errors := make(map[string]any)
 
 	for _, field := range f.Fields {
-		field.ErrorsTree(tree, nil)
+		field.ErrorsTree(errors, nil)
 	}
 
-	return tree
+	return map[string]any{
+		"errors":   f.Errors,
+		"children": errors,
+	}
 }
