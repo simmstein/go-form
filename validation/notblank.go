@@ -39,7 +39,7 @@ func (c NotBlank) Validate(data any) []Error {
 
 	v := reflect.ValueOf(data)
 
-	if v.IsZero() {
+	if data == nil || v.IsZero() {
 		errors = append(errors, Error(c.Message))
 
 		return errors

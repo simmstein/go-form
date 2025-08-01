@@ -18,6 +18,8 @@ package util
 import (
 	"errors"
 	"reflect"
+
+	"github.com/iancoleman/strcase"
 )
 
 func InspectStruct(input interface{}) (map[string]interface{}, error) {
@@ -37,8 +39,16 @@ func InspectStruct(input interface{}) (map[string]interface{}, error) {
 	for i := 0; i < val.NumField(); i++ {
 		field := typ.Field(i)
 		value := val.Field(i)
+		tags := typ.Field(i).Tag
+		name := field.Name
 
-		result[field.Name] = value.Interface()
+		fieldTag := tags.Get("field")
+
+		if fieldTag == "lowerCamel" {
+			name = strcase.ToLowerCamel(name)
+		}
+
+		result[name] = value.Interface()
 	}
 
 	return result, nil
