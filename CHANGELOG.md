@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## v1.2.0
+
 ### Added
 
 - feat: add tag `field` to specify the naming strategy (case)
