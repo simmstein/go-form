@@ -16,6 +16,8 @@ package form
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"maps"
 	"net/http"
 	"net/url"
@@ -32,6 +34,7 @@ type Form struct {
 	GlobalFields []*Field
 	Errors       []validation.Error
 	Method       string
+	JsonRequest  bool
 	Action       string
 	Name         string
 	Options      []*Option
@@ -201,6 +204,12 @@ func (f *Form) Mount(data any) error {
 	return nil
 }
 
+func (f *Form) WithJsonRequest() *Form {
+	f.JsonRequest = true
+
+	return f
+}
+
 // Copies datas from the form to a struct
 func (f *Form) Bind(data any) error {
 	toBind := make(map[string]any)
@@ -216,11 +225,30 @@ func (f *Form) Bind(data any) error {
 func (f *Form) HandleRequest(req *http.Request) {
 	var data url.Values
 
-	if f.Method != "GET" {
-		req.ParseForm()
-		data = req.Form
+	if f.JsonRequest {
+		body, err := ioutil.ReadAll(req.Body)
+
+		if err != nil {
+			return
+		}
+
+		mapping := make(map[string]any)
+		err = json.Unmarshal(body, &mapping)
+
+		if err != nil {
+			return
+		}
+
+		data = url.Values{}
+		util.MapToUrlValues(&data, f.Name, mapping)
 	} else {
-		data = req.URL.Query()
+		switch f.Method {
+		case "GET":
+			data = req.URL.Query()
+		default:
+			req.ParseForm()
+			data = req.Form
+		}
 	}
 
 	isSubmitted := false

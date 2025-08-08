@@ -1,5 +1,13 @@
 ## [Unreleased]
 
+## v1.3.0
+
+### Added
+
+- feat: allow to handle request using json body"
+- feat: add `WithJsonRequest` on form
+- feat: add `MapToUrlValues` transformer
+
 ## v1.2.0
 
 ### Added
