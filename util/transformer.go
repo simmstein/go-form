@@ -26,7 +26,13 @@ func MapToUrlValues(values *url.Values, prefix string, data map[string]any) {
 			for _, s := range v {
 				values.Add(keyValue, fmt.Sprintf("%v", s))
 			}
-		case int, int64, float64, bool:
+		case bool:
+			if v {
+				values.Add(keyValue, "1")
+			} else {
+				values.Add(keyValue, "0")
+			}
+		case int, int64, float64:
 			values.Add(keyValue, fmt.Sprintf("%v", v))
 		case map[string]any:
 			MapToUrlValues(values, keyValue, v)
