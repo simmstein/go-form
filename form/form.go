@@ -30,15 +30,15 @@ import (
 
 // Field represents a form
 type Form struct {
-	Fields       []*Field
-	GlobalFields []*Field
-	Errors       []validation.Error
-	Method       string
-	JsonRequest  bool
-	Action       string
-	Name         string
-	Options      []*Option
-	RequestData  *url.Values
+	Fields       []*Field           `json:"children"`
+	GlobalFields []*Field           `json:"-"`
+	Errors       []validation.Error `json:"-"`
+	Method       string             `json:"method"`
+	JsonRequest  bool               `json:"json_request"`
+	Action       string             `json:"action"`
+	Name         string             `json:"name"`
+	Options      []*Option          `json:"options"`
+	RequestData  *url.Values        `json:"-"`
 }
 
 // Generates a new form with default properties

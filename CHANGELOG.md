@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Added
+
+- feat: add json configuration
+
 ### Fixed
 
 - fix: reset `GlobalFields` in `End()`
