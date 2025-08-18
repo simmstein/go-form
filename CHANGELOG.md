@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## v1.4.0
+
 ### Added
 
 - feat: add json configuration
