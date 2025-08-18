@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Fixed
+
+- fix: reset `GlobalFields` in `End()`
+
 ## v1.3.0
 
 ### Added

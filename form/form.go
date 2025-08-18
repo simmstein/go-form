@@ -95,6 +95,8 @@ func (f *Form) Add(fields ...*Field) {
 // Configures its children deeply
 // This function must be called after adding all fields
 func (f *Form) End() *Form {
+	f.GlobalFields = []*Field{}
+
 	for _, c := range f.Fields {
 		f.AddGlobalField(c)
 	}
