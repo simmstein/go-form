@@ -56,20 +56,20 @@ func FieldValidation(f *Field) bool {
 
 // Field represents a field in a form
 type Field struct {
-	Name        string
-	Widget      string
-	Data        any
-	Options     []*Option
-	Children    []*Field
-	Constraints []validation.Constraint
-	Errors      []validation.Error
-	BeforeMount func(data any) (any, error)
-	BeforeBind  func(data any) (any, error)
-	Validate    func(f *Field) bool
-	IsSlice     bool
-	IsFixedName bool
-	Form        *Form
-	Parent      *Field
+	Name        string                      `json:"name"`
+	Widget      string                      `json:"widget"`
+	Data        any                         `json:"-"`
+	Options     []*Option                   `json:"options"`
+	Children    []*Field                    `json:"children"`
+	Constraints []validation.Constraint     `json:"-"`
+	Errors      []validation.Error          `json:"-"`
+	BeforeMount func(data any) (any, error) `json:"-"`
+	BeforeBind  func(data any) (any, error) `json:"-"`
+	Validate    func(f *Field) bool         `json:"-"`
+	IsSlice     bool                        `json:"is_slice"`
+	IsFixedName bool                        `json:"is_fixed_name"`
+	Form        *Form                       `json:"-"`
+	Parent      *Field                      `json:"-"`
 }
 
 // Generates a new field with default properties

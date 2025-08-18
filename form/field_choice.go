@@ -16,6 +16,7 @@ package form
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import (
+	"encoding/json"
 	"reflect"
 
 	"github.com/spf13/cast"
@@ -33,9 +34,9 @@ func (c Choice) Match(value string) bool {
 }
 
 type Choices struct {
-	Data         any
-	ValueBuilder func(key int, item any) string
-	LabelBuilder func(key int, item any) string
+	Data         any                            `json:"data"`
+	ValueBuilder func(key int, item any) string `json:"-"`
+	LabelBuilder func(key int, item any) string `json:"-"`
 }
 
 func (c *Choices) Match(f *Field, value string) bool {
@@ -98,6 +99,24 @@ func (c *Choices) GetChoices() []Choice {
 	}
 
 	return choices
+}
+
+func (c Choices) MarshalJSON() ([]byte, error) {
+	var choices []map[string]string
+
+	v := reflect.ValueOf(c.Data)
+
+	switch v.Kind() {
+	case reflect.Slice, reflect.Array, reflect.String, reflect.Map:
+		for i := 0; i < v.Len(); i++ {
+			choices = append(choices, map[string]string{
+				"value": c.ValueBuilder(i, v.Index(i).Interface()),
+				"label": c.LabelBuilder(i, v.Index(i).Interface()),
+			})
+		}
+	}
+
+	return json.Marshal(choices)
 }
 
 // Generates an instance of Choices

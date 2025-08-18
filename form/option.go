@@ -18,8 +18,8 @@ import "strings"
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 type Option struct {
-	Name  string
-	Value any
+	Name  string `json:"name"`
+	Value any    `json:"value"`
 }
 
 func NewOption(name string, value any) *Option {
