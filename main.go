@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"html/template"
 	"log"
 	"net/http"
@@ -13,6 +14,11 @@ import (
 func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		data := example.ExampleData{}
+		data.Collection = []example.CollectionItem{
+			{"Value a 1", "Value b 1"},
+			{"Value a 2", "Value b 2"},
+			{"Value a 3", "Value b 3"},
+		}
 
 		f := example.CreateDataForm()
 		f.Mount(data)
@@ -22,7 +28,7 @@ func main() {
 
 			if f.IsSubmitted() && f.IsValid() {
 				f.Bind(&data)
-				godump.Dump(data)
+				// godump.Dump(data)
 			}
 		}
 
@@ -91,10 +97,19 @@ func main() {
 						<strong>Valid</strong>
 						<span class="debug-value">{{ .Form.IsValid }}</span>
 					</div>
-					<div>
-						<strong>Data</strong>
-						<pre class="debug-valid">{{ .Dump }}</pre>
-					</div>
+					<table width="100%">
+					    <tr>
+					        <td width="50%" valign="top">
+								<pre class="debug-valid">{{ .Dump }}</pre>
+							</td>
+					        <td valign="top">
+								<details>
+									<summary>JSON</summary>
+									<pre class="debug-valid">{{ .Json }}</pre>
+								</details>
+							</td>
+					    </tr>
+					</table>
 				</div>
 
 				{{ form .Form }}
@@ -105,9 +120,12 @@ func main() {
 		var dump godump.Dumper
 		dump.Theme = godump.Theme{}
 
+		j, _ := json.MarshalIndent(f, "  ", "  ")
+
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		tpl.Execute(w, map[string]any{
 			"Form": f,
+			"Json": string(j),
 			"Dump": template.HTML(dump.Sprint(data)),
 		})
 	})

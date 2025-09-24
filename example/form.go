@@ -36,12 +36,18 @@ type ExampleDates struct {
 }
 
 type ExampleData struct {
-	Bytes    []byte
-	Text     string
-	Checkbox bool
-	Dates    ExampleDates
-	Choices  ExampleChoices
-	Inputs   ExampleOtherInputs
+	Collection []CollectionItem
+	Bytes      []byte
+	Text       string
+	Checkbox   bool
+	Dates      ExampleDates
+	Choices    ExampleChoices
+	Inputs     ExampleOtherInputs
+}
+
+type CollectionItem struct {
+	ValueA string
+	ValueB string
 }
 
 func CreateDataForm() *form.Form {
@@ -60,6 +66,19 @@ func CreateDataForm() *form.Form {
 		})
 
 	return form.NewForm(
+		form.NewFieldCollection("Collection").
+			WithOptions(
+				form.NewOption("label", "Collection"),
+				form.NewOption("form", form.NewForm(
+					form.NewFieldText("ValueA").
+						WithOptions(form.NewOption("label", "Value A")).
+						WithConstraints(
+							validation.NewNotBlank(),
+						),
+					form.NewFieldText("ValueB").
+						WithOptions(form.NewOption("label", "Value B")),
+				)),
+			),
 		form.NewFieldText("Bytes").
 			WithOptions(
 				form.NewOption("label", "Bytes"),

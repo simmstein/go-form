@@ -27,6 +27,14 @@ import (
 
 // Generic function for field.Validation
 func FieldValidation(f *Field) bool {
+	// if f.IsCollection {
+	// 	if formOption := f.GetOption("form"); formOption != nil {
+	// 		if formValue, ok := formOption.Value.(*Form); ok {
+	// 			godump.Dump(formValue)
+	// 		}
+	// 	}
+	// }
+
 	if len(f.Children) > 0 {
 		isValid := true
 
@@ -56,20 +64,22 @@ func FieldValidation(f *Field) bool {
 
 // Field represents a field in a form
 type Field struct {
-	Name        string                      `json:"name"`
-	Widget      string                      `json:"widget"`
-	Data        any                         `json:"-"`
-	Options     []*Option                   `json:"options"`
-	Children    []*Field                    `json:"children"`
-	Constraints []validation.Constraint     `json:"-"`
-	Errors      []validation.Error          `json:"-"`
-	BeforeMount func(data any) (any, error) `json:"-"`
-	BeforeBind  func(data any) (any, error) `json:"-"`
-	Validate    func(f *Field) bool         `json:"-"`
-	IsSlice     bool                        `json:"is_slice"`
-	IsFixedName bool                        `json:"is_fixed_name"`
-	Form        *Form                       `json:"-"`
-	Parent      *Field                      `json:"-"`
+	Name         string                      `json:"name"`
+	NamePrefix   string                      `json:"name_prefix"`
+	Widget       string                      `json:"widget"`
+	Data         any                         `json:"-"`
+	Options      []*Option                   `json:"options"`
+	Children     []*Field                    `json:"children"`
+	Constraints  []validation.Constraint     `json:"-"`
+	Errors       []validation.Error          `json:"-"`
+	BeforeMount  func(data any) (any, error) `json:"-"`
+	BeforeBind   func(data any) (any, error) `json:"-"`
+	Validate     func(f *Field) bool         `json:"-"`
+	IsSlice      bool                        `json:"is_slice"`
+	IsCollection bool                        `json:"is_collection"`
+	IsFixedName  bool                        `json:"is_fixed_name"`
+	Form         *Form                       `json:"-"`
+	Parent       *Field                      `json:"-"`
 }
 
 // Generates a new field with default properties
@@ -100,6 +110,20 @@ func NewField(name, widget string) *Field {
 	f.Validate = FieldValidation
 
 	return f
+}
+
+func (f *Field) Copy() *Field {
+	return &Field{
+		Name:        f.Name,
+		Widget:      f.Widget,
+		Options:     f.Options,
+		Constraints: f.Constraints,
+		BeforeMount: f.BeforeMount,
+		BeforeBind:  f.BeforeBind,
+		Validate:    f.Validate,
+		IsSlice:     f.IsSlice,
+		IsFixedName: f.IsFixedName,
+	}
 }
 
 // Checks if the field contains an option using its name
@@ -137,6 +161,20 @@ func (f *Field) WithOptions(options ...*Option) *Field {
 	return f
 }
 
+func (f *Field) RemoveOption(name string) *Field {
+	var options []*Option
+
+	for _, option := range f.Options {
+		if option.Name != name {
+			options = append(options, option)
+		}
+	}
+
+	f.Options = options
+
+	return f
+}
+
 // Sets data the field
 func (f *Field) WithData(data any) *Field {
 	f.Data = data
@@ -154,6 +192,13 @@ func (f *Field) ResetErrors() *Field {
 // Sets that the field represents a data slice
 func (f *Field) WithSlice() *Field {
 	f.IsSlice = true
+
+	return f
+}
+
+// Sets that the field represents a collection
+func (f *Field) WithCollection() *Field {
+	f.IsCollection = true
 
 	return f
 }
@@ -233,9 +278,9 @@ func (f *Field) GetName() string {
 	}
 
 	if f.Form != nil && f.Form.Name != "" {
-		name = fmt.Sprintf("%s[%s]", f.Form.Name, f.Name)
+		name = fmt.Sprintf("%s%s[%s]", f.Form.Name, f.NamePrefix, f.Name)
 	} else if f.Parent != nil {
-		name = fmt.Sprintf("%s[%s]", f.Parent.GetName(), f.Name)
+		name = fmt.Sprintf("%s%s[%s]", f.Parent.GetName(), f.NamePrefix, f.Name)
 	} else {
 		name = f.Name
 	}
