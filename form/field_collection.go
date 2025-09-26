@@ -41,22 +41,29 @@ func NewFieldCollection(name string) *Field {
 					slice := reflect.ValueOf(data)
 
 					for i := 0; i < slice.Len(); i++ {
-						form := src.Copy()
-						form.Mount(slice.Index(i).Interface())
+						name := fmt.Sprintf("%d", i)
+						value := slice.Index(i).Interface()
 
-						field := f.Copy()
-						field.Widget = "sub_form"
-						field.Name = fmt.Sprintf("%d", i)
-						field.Add(form.Fields...)
-						field.
-							RemoveOption("form").
-							RemoveOption("label")
+						if f.HasChild(name) {
+							f.GetChild(name).Mount(value)
+						} else {
+							form := src.Copy()
+							form.Mount(value)
 
-						for _, c := range field.Children {
-							c.NamePrefix = fmt.Sprintf("[%d]", i)
+							field := f.Copy()
+							field.Widget = "sub_form"
+							field.Name = name
+							field.Add(form.Fields...)
+							field.
+								RemoveOption("form").
+								RemoveOption("label")
+
+							for _, c := range field.Children {
+								c.NamePrefix = fmt.Sprintf("[%d]", i)
+							}
+
+							f.Add(field)
 						}
-
-						f.Add(field)
 					}
 				}
 			}

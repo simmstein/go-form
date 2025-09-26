@@ -21,20 +21,13 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/yassinebenaid/godump"
 	"gitnet.fr/deblan/go-form/util"
 	"gitnet.fr/deblan/go-form/validation"
 )
 
 // Generic function for field.Validation
 func FieldValidation(f *Field) bool {
-	// if f.IsCollection {
-	// 	if formOption := f.GetOption("form"); formOption != nil {
-	// 		if formValue, ok := formOption.Value.(*Form); ok {
-	// 			godump.Dump(formValue)
-	// 		}
-	// 	}
-	// }
-
 	if len(f.Children) > 0 {
 		isValid := true
 
@@ -47,6 +40,10 @@ func FieldValidation(f *Field) bool {
 			}
 
 			isValid = isValid && isChildValid
+
+			for _, sc := range c.Children {
+				isValid = isValid && FieldValidation(sc)
+			}
 		}
 
 		return isValid
@@ -115,6 +112,7 @@ func NewField(name, widget string) *Field {
 func (f *Field) Copy() *Field {
 	return &Field{
 		Name:        f.Name,
+		Form:        f.Form,
 		Widget:      f.Widget,
 		Options:     f.Options,
 		Constraints: f.Constraints,
@@ -332,7 +330,7 @@ func (f *Field) Mount(data any) error {
 }
 
 // Bind the data into the given map
-func (f *Field) Bind(data map[string]any, key *string) error {
+func (f *Field) Bind(data map[string]any, key *string, parentIsSlice bool) error {
 	if len(f.Children) == 0 {
 		v, err := f.BeforeBind(f.Data)
 
@@ -352,7 +350,30 @@ func (f *Field) Bind(data map[string]any, key *string) error {
 	data[f.Name] = make(map[string]any)
 
 	for _, child := range f.Children {
-		child.Bind(data[f.Name].(map[string]any), key)
+		child.Bind(data[f.Name].(map[string]any), key, f.IsCollection)
+	}
+
+	if f.IsCollection {
+		var nextData []any
+		values := data[f.Name].(map[string]any)
+		var keys []string
+
+		for key, _ := range values {
+			keys = append(keys, key)
+		}
+
+		slices.Sort(keys)
+
+		for _, key := range keys {
+			for valueKey, value := range values {
+				if valueKey == key {
+					godump.Dump([]string{valueKey, key})
+					nextData = append(nextData, value)
+				}
+			}
+		}
+
+		data[f.Name] = nextData
 	}
 
 	return nil

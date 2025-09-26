@@ -25,7 +25,6 @@ import (
 	"strings"
 
 	"github.com/mitchellh/mapstructure"
-	"github.com/yassinebenaid/godump"
 	"gitnet.fr/deblan/go-form/util"
 	"gitnet.fr/deblan/go-form/validation"
 )
@@ -110,10 +109,8 @@ func (f *Form) End() *Form {
 func (f *Form) AddGlobalField(field *Field) {
 	f.GlobalFields = append(f.GlobalFields, field)
 
-	if field.Widget != "collection" {
-		for _, c := range field.Children {
-			f.AddGlobalField(c)
-		}
+	for _, c := range field.Children {
+		f.AddGlobalField(c)
 	}
 }
 
@@ -221,10 +218,8 @@ func (f *Form) Bind(data any) error {
 	toBind := make(map[string]any)
 
 	for _, field := range f.Fields {
-		field.Bind(toBind, nil)
+		field.Bind(toBind, nil, false)
 	}
-
-	godump.Dump(toBind)
 
 	return mapstructure.Decode(toBind, data)
 }

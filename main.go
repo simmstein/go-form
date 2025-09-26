@@ -16,8 +16,6 @@ func main() {
 		data := example.ExampleData{}
 		data.Collection = []example.CollectionItem{
 			{"Value a 1", "Value b 1"},
-			{"Value a 2", "Value b 2"},
-			{"Value a 3", "Value b 3"},
 		}
 
 		f := example.CreateDataForm()
@@ -113,6 +111,34 @@ func main() {
 				</div>
 
 				{{ form .Form }}
+
+				<script>
+					const collections = document.querySelectorAll('*[data-prototype]')
+
+					collections.forEach((collection) => {
+						const container = collection.parentNode
+						const toolbar = document.createElement('div')
+
+						const createAdd = () => {
+							const btn = document.createElement('button')
+							btn.textContent = '+'
+							btn.type = 'button'
+
+							const form = collection.getAttribute('data-prototype')
+								.replace(/__name__/g, collection.children.length)
+
+							btn.addEventListener('click', () => {
+								collection.insertAdjacentHTML("beforeend", form)
+							})
+
+							return btn
+						}
+
+						toolbar.appendChild(createAdd())
+
+						container.appendChild(toolbar)
+					})
+				</script>
 			</body>
 			</html>
 		`)

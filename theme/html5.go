@@ -375,10 +375,7 @@ var Html5 = CreateTheme(func() map[string]RenderFunc {
 		field.WithOptions(form.NewOption("prototype", prototype))
 		field.Widget = "collection_build"
 
-		return Div(
-			Attr("data-prototype", prototype),
-			parent["form_widget"](parent, field),
-		)
+		return parent["form_widget"](parent, field)
 	}
 
 	theme["collection_build"] = func(parent map[string]RenderFunc, args ...any) Node {
