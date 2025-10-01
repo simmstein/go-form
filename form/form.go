@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strings"
 
 	"github.com/mitchellh/mapstructure"
 	"gitnet.fr/deblan/go-form/util"
@@ -217,7 +218,7 @@ func (f *Form) Bind(data any) error {
 	toBind := make(map[string]any)
 
 	for _, field := range f.Fields {
-		field.Bind(toBind, nil)
+		field.Bind(toBind, nil, false)
 	}
 
 	return mapstructure.Decode(toBind, data)
@@ -255,8 +256,23 @@ func (f *Form) HandleRequest(req *http.Request) {
 
 	isSubmitted := false
 
+	type collectionData map[string]any
+
 	for _, c := range f.GlobalFields {
-		if data.Has(c.GetName()) {
+		if c.IsCollection {
+			collection := util.NewCollection()
+
+			for key, _ := range data {
+				if strings.HasPrefix(key, c.GetName()) {
+					root := strings.Replace(key, c.GetName(), "", 1)
+					indexes := util.ExtractDataIndexes(root)
+
+					collection.Add(indexes, data.Get(key))
+				}
+			}
+
+			c.Mount(collection.Slice())
+		} else if data.Has(c.GetName()) {
 			isSubmitted = true
 
 			if c.IsSlice {
@@ -287,5 +303,18 @@ func (f *Form) ErrorsTree() map[string]any {
 	return map[string]any{
 		"errors":   f.Errors,
 		"children": slices.Collect(maps.Values(errors)),
+	}
+}
+
+func (f *Form) Copy() *Form {
+	var fields []*Field
+
+	for _, i := range f.Fields {
+		f := *i
+		fields = append(fields, &f)
+	}
+
+	return &Form{
+		Fields: fields,
 	}
 }

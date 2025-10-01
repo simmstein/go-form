@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Form HTML5 (with Pico)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.colors.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+
+	<style>
+        * {
+            font-size: 15px;
+        }
+
+        .p10 {
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+
+        pre {
+            padding: 10px;
+        }
+
+        fieldset {
+            border: 1px solid var(--pico-form-element-border-color);
+            padding: 10px;
+        }
+
+        form > div:not(:last-child), fieldset > div:not(:last-child) {
+            padding-bottom: 20px;
+        }
+
+        .gf-errors {
+            color: var(--pico-form-element-invalid-border-color);
+        }
+
+        .gf-help {
+            font-style: italic;
+            color: var(--pico-form-element-placeholder-color);
+        }
+	</style>
+</head>
+<body class="container">
+    <details class="p10">
+        <summary>Debug view</summary>
+
+            <div class="p10">
+                <strong>Submitted:</strong>
+                {{ .isSubmitted }}
+            </div>
+            <div class="p10">
+                <strong>Valid:</strong>
+                {{ .isValid }}
+            </div>
+
+            <details class="p10">
+                <summary><strong>Dump of data</strong></summary>
+                <pre>{{ .dump }}</pre>
+            </details>
+
+            <details class="p10">
+                <summary><strong>Form as JSON</strong></summary>
+                <pre>{{ .json }}</pre>
+            </details>
+        </div>
+    </details>
+
+    {{if .isValid}}
+        <p class="pico-color-green-500">The form is valid!</p>
+    {{else}}
+        <p class="pico-color-red-500">The form is invalid!</p>
+    {{end}}
+
+    {{ form .form }}
+
+	<script>
+		const collections = document.querySelectorAll('*[data-prototype]')
+
+        const collectionItemAddToolBar = (item) => {
+			const toolbar = document.createElement('div')
+
+			const createBtn = () => {
+				const btn = document.createElement('button')
+				btn.textContent = '-'
+				btn.type = 'button'
+
+				btn.addEventListener('click', () => {
+				    item.remove()
+                })
+
+				return btn
+			}
+
+			toolbar.appendChild(createBtn())
+			item.querySelector('fieldset').appendChild(toolbar)
+        }
+
+        const collectionAddToolbar = (collection) => {
+			const container = collection.parentNode
+			const toolbar = document.createElement('div')
+
+			const createBtn = () => {
+				const btn = document.createElement('button')
+				btn.textContent = '+'
+				btn.type = 'button'
+
+				btn.addEventListener('click', () => {
+					const form = collection.getAttribute('data-prototype')
+						.replace(/__name__/g, collection.children.length)
+
+					collection.insertAdjacentHTML("beforeend", form)
+                    collectionItemAddToolBar(collection.lastChild)
+				})
+
+				return btn
+			}
+
+			toolbar.appendChild(createBtn())
+			container.appendChild(toolbar)
+        }
+
+		collections.forEach((collection) => {
+            collectionAddToolbar(collection)
+
+            for (let item of collection.children) {
+                collectionItemAddToolBar(item)
+            }
+        })
+	</script>
+</body>
+</html>
+

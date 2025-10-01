@@ -36,15 +36,21 @@ type ExampleDates struct {
 }
 
 type ExampleData struct {
-	Bytes    []byte
-	Text     string
-	Checkbox bool
-	Dates    ExampleDates
-	Choices  ExampleChoices
-	Inputs   ExampleOtherInputs
+	Collection []CollectionItem
+	Bytes      []byte
+	Text       string
+	Checkbox   bool
+	Dates      ExampleDates
+	Choices    ExampleChoices
+	Inputs     ExampleOtherInputs
 }
 
-func CreateDataForm() *form.Form {
+type CollectionItem struct {
+	ValueA string
+	ValueB string
+}
+
+func CreateDataForm(action string) *form.Form {
 	items := []Item{
 		Item{Id: 1, Name: "Item 1"},
 		Item{Id: 2, Name: "Item 2"},
@@ -177,6 +183,19 @@ func CreateDataForm() *form.Form {
 						form.NewOption("multiple", true),
 					),
 			),
+		form.NewFieldCollection("Collection").
+			WithOptions(
+				form.NewOption("label", "Collection"),
+				form.NewOption("form", form.NewForm(
+					form.NewFieldText("ValueA").
+						WithOptions(form.NewOption("label", "Value A")).
+						WithConstraints(
+							validation.NewNotBlank(),
+						),
+					form.NewFieldText("ValueB").
+						WithOptions(form.NewOption("label", "Value B")),
+				)),
+			),
 		form.NewFieldCsrf("_csrf_token").WithData("my-token"),
 		form.NewSubmit("submit").
 			WithOptions(
@@ -187,8 +206,8 @@ func CreateDataForm() *form.Form {
 	).
 		End().
 		WithOptions(
-			form.NewOption("help", "Form help"),
+			form.NewOption("help", "Form global help"),
 		).
 		WithMethod(http.MethodPost).
-		WithAction("/")
+		WithAction(action)
 }

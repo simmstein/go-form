@@ -1,6 +1,7 @@
 package theme
 
 import (
+	"bytes"
 	"fmt"
 
 	"github.com/spf13/cast"
@@ -58,6 +59,7 @@ var Html5 = CreateTheme(func() map[string]RenderFunc {
 		}
 
 		return Ul(
+			Class("gf-errors"),
 			Group(result),
 		)
 	}
@@ -93,6 +95,7 @@ var Html5 = CreateTheme(func() map[string]RenderFunc {
 		}
 
 		return Div(
+			Class("gf-help"),
 			Text(help),
 			extra,
 		)
@@ -348,6 +351,50 @@ var Html5 = CreateTheme(func() map[string]RenderFunc {
 		)
 	}
 
+	theme["collection"] = func(parent map[string]RenderFunc, args ...any) Node {
+		field := args[0].(*form.Field)
+
+		var prototype string
+
+		if opt := field.GetOption("form"); opt != nil {
+			if val, ok := opt.Value.(*form.Form); ok {
+				var buffer bytes.Buffer
+				dest := form.NewFieldSubForm(field.Name)
+
+				for _, c := range val.Fields {
+					child := c.Copy()
+					child.NamePrefix = "[__name__]"
+					dest.Add(child)
+				}
+
+				fieldPrototype := parent["form_row"](parent, dest)
+				fieldPrototype.Render(&buffer)
+
+				prototype = buffer.String()
+			}
+		}
+
+		field.WithOptions(form.NewOption("prototype", prototype))
+		field.Widget = "collection_build"
+
+		return parent["form_widget"](parent, field)
+	}
+
+	theme["collection_build"] = func(parent map[string]RenderFunc, args ...any) Node {
+		field := args[0].(*form.Field)
+		prototype := field.GetOption("prototype").AsString()
+		var items []Node
+
+		for _, child := range field.Children {
+			items = append(items, parent["form_row"](parent, child))
+		}
+
+		return Div(
+			Attr("data-prototype", prototype),
+			Group(items),
+		)
+	}
+
 	theme["form_widget"] = func(parent map[string]RenderFunc, args ...any) Node {
 		field := args[0].(*form.Field)
 
@@ -407,6 +454,7 @@ var Html5 = CreateTheme(func() map[string]RenderFunc {
 		form := args[0].(*form.Form)
 
 		return Form(
+			Class("gf-form"),
 			Action(form.Action),
 			Method(form.Method),
 			parent["form_attributes"](parent, form),

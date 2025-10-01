@@ -145,7 +145,7 @@ func NewFieldChoice(name string) *Field {
 		)
 
 	f.Validate = func(field *Field) bool {
-		isValid := FieldValidation(field)
+		isValid := field.Validate(field)
 
 		if len(validation.NewNotBlank().Validate(field.Data)) == 0 {
 			choices := field.GetOption("choices").Value.(*Choices)

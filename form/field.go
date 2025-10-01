@@ -26,7 +26,7 @@ import (
 )
 
 // Generic function for field.Validation
-func FieldValidation(f *Field) bool {
+func DefaultFieldValidation(f *Field) bool {
 	if len(f.Children) > 0 {
 		isValid := true
 
@@ -38,7 +38,11 @@ func FieldValidation(f *Field) bool {
 				c.Errors = errs
 			}
 
-			isValid = isValid && isChildValid
+			isValid = isChildValid && isValid
+
+			for _, sc := range c.Children {
+				isValid = DefaultFieldValidation(sc) && isValid
+			}
 		}
 
 		return isValid
@@ -56,20 +60,22 @@ func FieldValidation(f *Field) bool {
 
 // Field represents a field in a form
 type Field struct {
-	Name        string                      `json:"name"`
-	Widget      string                      `json:"widget"`
-	Data        any                         `json:"-"`
-	Options     []*Option                   `json:"options"`
-	Children    []*Field                    `json:"children"`
-	Constraints []validation.Constraint     `json:"-"`
-	Errors      []validation.Error          `json:"-"`
-	BeforeMount func(data any) (any, error) `json:"-"`
-	BeforeBind  func(data any) (any, error) `json:"-"`
-	Validate    func(f *Field) bool         `json:"-"`
-	IsSlice     bool                        `json:"is_slice"`
-	IsFixedName bool                        `json:"is_fixed_name"`
-	Form        *Form                       `json:"-"`
-	Parent      *Field                      `json:"-"`
+	Name         string                      `json:"name"`
+	NamePrefix   string                      `json:"name_prefix"`
+	Widget       string                      `json:"widget"`
+	Data         any                         `json:"-"`
+	Options      []*Option                   `json:"options"`
+	Children     []*Field                    `json:"children"`
+	Constraints  []validation.Constraint     `json:"-"`
+	Errors       []validation.Error          `json:"-"`
+	BeforeMount  func(data any) (any, error) `json:"-"`
+	BeforeBind   func(data any) (any, error) `json:"-"`
+	Validate     func(f *Field) bool         `json:"-"`
+	IsSlice      bool                        `json:"is_slice"`
+	IsCollection bool                        `json:"is_collection"`
+	IsFixedName  bool                        `json:"is_fixed_name"`
+	Form         *Form                       `json:"-"`
+	Parent       *Field                      `json:"-"`
 }
 
 // Generates a new field with default properties
@@ -97,9 +103,24 @@ func NewField(name, widget string) *Field {
 		NewOption("help_attr", Attrs{}),
 	)
 
-	f.Validate = FieldValidation
+	f.Validate = DefaultFieldValidation
 
 	return f
+}
+
+func (f *Field) Copy() *Field {
+	return &Field{
+		Name:        f.Name,
+		Form:        f.Form,
+		Widget:      f.Widget,
+		Options:     f.Options,
+		Constraints: f.Constraints,
+		BeforeMount: f.BeforeMount,
+		BeforeBind:  f.BeforeBind,
+		Validate:    f.Validate,
+		IsSlice:     f.IsSlice,
+		IsFixedName: f.IsFixedName,
+	}
 }
 
 // Checks if the field contains an option using its name
@@ -137,6 +158,20 @@ func (f *Field) WithOptions(options ...*Option) *Field {
 	return f
 }
 
+func (f *Field) RemoveOption(name string) *Field {
+	var options []*Option
+
+	for _, option := range f.Options {
+		if option.Name != name {
+			options = append(options, option)
+		}
+	}
+
+	f.Options = options
+
+	return f
+}
+
 // Sets data the field
 func (f *Field) WithData(data any) *Field {
 	f.Data = data
@@ -154,6 +189,13 @@ func (f *Field) ResetErrors() *Field {
 // Sets that the field represents a data slice
 func (f *Field) WithSlice() *Field {
 	f.IsSlice = true
+
+	return f
+}
+
+// Sets that the field represents a collection
+func (f *Field) WithCollection() *Field {
+	f.IsCollection = true
 
 	return f
 }
@@ -233,9 +275,9 @@ func (f *Field) GetName() string {
 	}
 
 	if f.Form != nil && f.Form.Name != "" {
-		name = fmt.Sprintf("%s[%s]", f.Form.Name, f.Name)
+		name = fmt.Sprintf("%s%s[%s]", f.Form.Name, f.NamePrefix, f.Name)
 	} else if f.Parent != nil {
-		name = fmt.Sprintf("%s[%s]", f.Parent.GetName(), f.Name)
+		name = fmt.Sprintf("%s%s[%s]", f.Parent.GetName(), f.NamePrefix, f.Name)
 	} else {
 		name = f.Name
 	}
@@ -287,7 +329,7 @@ func (f *Field) Mount(data any) error {
 }
 
 // Bind the data into the given map
-func (f *Field) Bind(data map[string]any, key *string) error {
+func (f *Field) Bind(data map[string]any, key *string, parentIsSlice bool) error {
 	if len(f.Children) == 0 {
 		v, err := f.BeforeBind(f.Data)
 
@@ -307,7 +349,29 @@ func (f *Field) Bind(data map[string]any, key *string) error {
 	data[f.Name] = make(map[string]any)
 
 	for _, child := range f.Children {
-		child.Bind(data[f.Name].(map[string]any), key)
+		child.Bind(data[f.Name].(map[string]any), key, f.IsCollection)
+	}
+
+	if f.IsCollection {
+		var nextData []any
+		values := data[f.Name].(map[string]any)
+		var keys []string
+
+		for key, _ := range values {
+			keys = append(keys, key)
+		}
+
+		slices.Sort(keys)
+
+		for _, key := range keys {
+			for valueKey, value := range values {
+				if valueKey == key {
+					nextData = append(nextData, value)
+				}
+			}
+		}
+
+		data[f.Name] = nextData
 	}
 
 	return nil

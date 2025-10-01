@@ -29,6 +29,10 @@ func InspectStruct(input interface{}) (map[string]interface{}, error) {
 		val = val.Elem()
 	}
 
+	if val.Kind() == reflect.Map {
+		return input.(map[string]interface{}), nil
+	}
+
 	if val.Kind() != reflect.Struct {
 		return nil, errors.New("Invalid type")
 	}
