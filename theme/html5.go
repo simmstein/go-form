@@ -59,6 +59,7 @@ var Html5 = CreateTheme(func() map[string]RenderFunc {
 		}
 
 		return Ul(
+			Class("gf-errors"),
 			Group(result),
 		)
 	}
@@ -94,6 +95,7 @@ var Html5 = CreateTheme(func() map[string]RenderFunc {
 		}
 
 		return Div(
+			Class("gf-help"),
 			Text(help),
 			extra,
 		)
@@ -452,6 +454,7 @@ var Html5 = CreateTheme(func() map[string]RenderFunc {
 		form := args[0].(*form.Form)
 
 		return Form(
+			Class("gf-form"),
 			Action(form.Action),
 			Method(form.Method),
 			parent["form_attributes"](parent, form),
