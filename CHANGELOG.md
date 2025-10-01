@@ -1,8 +1,11 @@
 ## [Unreleased]
 
+## v1.5.0
+
 ### Added
 
 - feat: add collection widget
+- feat: refactoring and improvement of example
 
 ## v1.4.0
 
