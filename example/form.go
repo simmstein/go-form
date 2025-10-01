@@ -50,6 +50,10 @@ type CollectionItem struct {
 	ValueB string
 }
 
+type Theme struct {
+	Value string `field:"lowerCamel"`
+}
+
 func CreateDataForm(action string) *form.Form {
 	items := []Item{
 		Item{Id: 1, Name: "Item 1"},
@@ -210,4 +214,38 @@ func CreateDataForm(action string) *form.Form {
 		).
 		WithMethod(http.MethodPost).
 		WithAction(action)
+}
+
+func NewTheme(value string) *Theme {
+	return &Theme{Value: value}
+}
+
+func CreateThemeSelectorForm() *form.Form {
+	choices := form.NewChoices([]map[string]string{
+		map[string]string{"value": "/", "label": "Html5"},
+		map[string]string{"value": "/bootstrap", "label": "Bootstrap5"},
+	})
+
+	choices.LabelBuilder = func(key int, item any) string {
+		return item.(map[string]string)["label"]
+	}
+
+	choices.ValueBuilder = func(key int, item any) string {
+		return item.(map[string]string)["value"]
+	}
+
+	return form.NewForm(
+		form.NewFieldChoice("value").
+			WithOptions(
+				form.NewOption("choices", choices),
+				form.NewOption("label", "Select a theme"),
+				form.NewOption("required", true),
+				form.NewOption("attr", form.Attrs{
+					"onchange": "document.location.href = this.value",
+				}),
+			),
+	).
+		End().
+		WithName("").
+		WithMethod(http.MethodGet)
 }

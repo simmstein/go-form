@@ -17,21 +17,24 @@ var templates embed.FS
 
 func handler(view, action string, formRenderer *theme.Renderer, w http.ResponseWriter, r *http.Request) {
 	entity := example.ExampleData{}
-	form := example.CreateDataForm(action)
+	entityForm := example.CreateDataForm(action)
+	entityForm.Mount(entity)
 
-	form.Mount(entity)
+	style := example.NewTheme(action)
+	styleForm := example.CreateThemeSelectorForm()
+	styleForm.Mount(style)
 
-	if r.Method == form.Method {
-		form.HandleRequest(r)
+	if r.Method == entityForm.Method {
+		entityForm.HandleRequest(r)
 
-		if form.IsSubmitted() && form.IsValid() {
-			form.Bind(&entity)
+		if entityForm.IsSubmitted() && entityForm.IsValid() {
+			entityForm.Bind(&entity)
 		}
 	}
 
 	content, _ := templates.ReadFile(view)
 
-	formAsJson, _ := json.MarshalIndent(form, "  ", "  ")
+	formAsJson, _ := json.MarshalIndent(entityForm, "  ", "  ")
 
 	tpl, _ := template.New("page").
 		Funcs(formRenderer.FuncMap()).
@@ -43,9 +46,10 @@ func handler(view, action string, formRenderer *theme.Renderer, w http.ResponseW
 	dump.Theme = godump.Theme{}
 
 	tpl.Execute(w, map[string]any{
-		"isSubmitted": form.IsSubmitted(),
-		"isValid":     form.IsValid(),
-		"form":        form,
+		"isSubmitted": entityForm.IsSubmitted(),
+		"isValid":     entityForm.IsValid(),
+		"form":        entityForm,
+		"styleForm":   styleForm,
 		"json":        string(formAsJson),
 		"dump":        template.HTML(dump.Sprint(entity)),
 	})
@@ -72,5 +76,6 @@ func main() {
 		)
 	})
 
+	log.Println("Browse: http://localhost:1122")
 	log.Fatal(http.ListenAndServe(":1122", nil))
 }
