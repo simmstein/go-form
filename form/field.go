@@ -21,13 +21,12 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/yassinebenaid/godump"
 	"gitnet.fr/deblan/go-form/util"
 	"gitnet.fr/deblan/go-form/validation"
 )
 
 // Generic function for field.Validation
-func FieldValidation(f *Field) bool {
+func DefaultFieldValidation(f *Field) bool {
 	if len(f.Children) > 0 {
 		isValid := true
 
@@ -39,10 +38,10 @@ func FieldValidation(f *Field) bool {
 				c.Errors = errs
 			}
 
-			isValid = isValid && isChildValid
+			isValid = isChildValid && isValid
 
 			for _, sc := range c.Children {
-				isValid = isValid && FieldValidation(sc)
+				isValid = DefaultFieldValidation(sc) && isValid
 			}
 		}
 
@@ -104,7 +103,7 @@ func NewField(name, widget string) *Field {
 		NewOption("help_attr", Attrs{}),
 	)
 
-	f.Validate = FieldValidation
+	f.Validate = DefaultFieldValidation
 
 	return f
 }
@@ -367,7 +366,6 @@ func (f *Field) Bind(data map[string]any, key *string, parentIsSlice bool) error
 		for _, key := range keys {
 			for valueKey, value := range values {
 				if valueKey == key {
-					godump.Dump([]string{valueKey, key})
 					nextData = append(nextData, value)
 				}
 			}
