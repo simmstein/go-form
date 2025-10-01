@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Added
+
+- feat: add collection widget
+
 ## v1.4.0
 
 ### Added
