@@ -293,6 +293,7 @@ func (f *Form) IsSubmitted() bool {
 	return f.RequestData != nil
 }
 
+// Generates a tree of errors
 func (f *Form) ErrorsTree() map[string]any {
 	errors := make(map[string]any)
 

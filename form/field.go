@@ -158,6 +158,7 @@ func (f *Field) WithOptions(options ...*Option) *Field {
 	return f
 }
 
+// Remove an option if exists
 func (f *Field) RemoveOption(name string) *Field {
 	var options []*Option
 
@@ -377,6 +378,7 @@ func (f *Field) Bind(data map[string]any, key *string, parentIsSlice bool) error
 	return nil
 }
 
+// Generates a tree of errors
 func (f *Field) ErrorsTree(tree map[string]any, key *string) {
 	var index string
 
