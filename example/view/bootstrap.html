@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Form with Bootstrap</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+    	<style>
+        fieldset {
+            border: 1px solid #999;
+            padding: 10px;
+        }
+
+        form > div:not(:last-child), fieldset > div:not(:last-child) {
+            padding-bottom: 20px;
+        }
+
+        .gf-help {
+            font-style: italic;
+            color: #999;
+        }
+	</style>
+</head>
+<body>
+	<div class="container">
+        <details>
+            <summary>Debug view</summary>
+            <div class="py-2">
+                <strong>Submitted:</strong>
+                {{ .isSubmitted }}
+            </div>
+            <div class="py-2">
+                <strong>Valid:</strong>
+                {{ .isValid }}
+            </div>
+
+            <details class="py-2">
+                <summary><strong>Dump of data</strong></summary>
+                <pre class="p-2">{{ .dump }}</pre>
+            </details>
+
+            <details class="py-2">
+                <summary><strong>Form as JSON</strong></summary>
+                <pre class="p-2">{{ .json }}</pre>
+            </details>
+        </details>
+
+        {{if .isValid}}
+            <div class="alert alert-success">The form is valid!</div>
+        {{else}}
+            <div class="alert alert-warning">The form is invalid!</div>
+        {{end}}
+
+		{{ form .form }}
+	</div>
+
+	<script>
+		const collections = document.querySelectorAll('*[data-prototype]')
+
+        const collectionItemAddToolBar = (item) => {
+			const toolbar = document.createElement('div')
+
+			const createBtn = () => {
+				const btn = document.createElement('button')
+				btn.textContent = '-'
+				btn.type = 'button'
+                btn.className = "btn btn-primary"
+
+				btn.addEventListener('click', () => {
+				    item.remove()
+                })
+
+				return btn
+			}
+
+			toolbar.appendChild(createBtn())
+			item.querySelector('fieldset').appendChild(toolbar)
+        }
+
+        const collectionAddToolbar = (collection) => {
+			const container = collection.parentNode
+			const toolbar = document.createElement('div')
+
+			const createBtn = () => {
+				const btn = document.createElement('button')
+				btn.textContent = '+'
+				btn.type = 'button'
+                btn.className = "btn btn-primary"
+
+				btn.addEventListener('click', () => {
+					const form = collection.getAttribute('data-prototype')
+						.replace(/__name__/g, collection.children.length)
+
+					collection.insertAdjacentHTML("beforeend", form)
+                    collectionItemAddToolBar(collection.lastChild)
+				})
+
+				return btn
+			}
+
+			toolbar.appendChild(createBtn())
+			container.appendChild(toolbar)
+        }
+
+		collections.forEach((collection) => {
+            collectionAddToolbar(collection)
+
+            for (let item of collection.children) {
+                collectionItemAddToolBar(item)
+            }
+        })
+	</script>
+</body>
+</html>

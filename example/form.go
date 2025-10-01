@@ -50,7 +50,7 @@ type CollectionItem struct {
 	ValueB string
 }
 
-func CreateDataForm() *form.Form {
+func CreateDataForm(action string) *form.Form {
 	items := []Item{
 		Item{Id: 1, Name: "Item 1"},
 		Item{Id: 2, Name: "Item 2"},
@@ -66,19 +66,6 @@ func CreateDataForm() *form.Form {
 		})
 
 	return form.NewForm(
-		form.NewFieldCollection("Collection").
-			WithOptions(
-				form.NewOption("label", "Collection"),
-				form.NewOption("form", form.NewForm(
-					form.NewFieldText("ValueA").
-						WithOptions(form.NewOption("label", "Value A")).
-						WithConstraints(
-							validation.NewNotBlank(),
-						),
-					form.NewFieldText("ValueB").
-						WithOptions(form.NewOption("label", "Value B")),
-				)),
-			),
 		form.NewFieldText("Bytes").
 			WithOptions(
 				form.NewOption("label", "Bytes"),
@@ -196,6 +183,19 @@ func CreateDataForm() *form.Form {
 						form.NewOption("multiple", true),
 					),
 			),
+		form.NewFieldCollection("Collection").
+			WithOptions(
+				form.NewOption("label", "Collection"),
+				form.NewOption("form", form.NewForm(
+					form.NewFieldText("ValueA").
+						WithOptions(form.NewOption("label", "Value A")).
+						WithConstraints(
+							validation.NewNotBlank(),
+						),
+					form.NewFieldText("ValueB").
+						WithOptions(form.NewOption("label", "Value B")),
+				)),
+			),
 		form.NewFieldCsrf("_csrf_token").WithData("my-token"),
 		form.NewSubmit("submit").
 			WithOptions(
@@ -206,8 +206,8 @@ func CreateDataForm() *form.Form {
 	).
 		End().
 		WithOptions(
-			form.NewOption("help", "Form help"),
+			form.NewOption("help", "Form global help"),
 		).
 		WithMethod(http.MethodPost).
-		WithAction("/")
+		WithAction(action)
 }
